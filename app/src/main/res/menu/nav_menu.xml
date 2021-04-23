@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:title="@string/rooms"
+        android:id="@+id/roomsFragment"
+        android:icon="@drawable/ic_bolt_white" />
+    <item
+        android:title="@string/create_room"
+        android:id="@+id/createRoomFragment"
+        android:icon="@drawable/ic_add_white" />
+    <item
+        android:title="@string/profile"
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_person_white" />
+</menu>

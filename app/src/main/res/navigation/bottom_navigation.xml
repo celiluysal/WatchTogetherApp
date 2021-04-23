@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_navigation"
+    app:startDestination="@id/roomsFragment">
+
+    <fragment
+        android:id="@+id/roomsFragment"
+        android:name="com.celiluysal.watchtogetherapp.ui.home.RoomsFragment"
+        android:label="rooms_fragment"
+        tools:layout="@layout/rooms_fragment" />
+    <fragment
+        android:id="@+id/createRoomFragment"
+        android:name="com.celiluysal.watchtogetherapp.ui.create_room.CreateRoomFragment"
+        android:label="create_room_fragment"
+        tools:layout="@layout/create_room_fragment" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.celiluysal.watchtogetherapp.ui.profile.ProfileFragment"
+        android:label="profile_fragment"
+        tools:layout="@layout/profile_fragment" />
+</navigation>

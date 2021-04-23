@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">WatchTogetherApp</string>
+
+    <string name="login">Oturum Aç</string>
+    <string name="email">E-mail</string>
+    <string name="password">Şifre</string>
+    <string name="accont_question">Hesabınız yok mu?</string>
+    <string name="register">Kaydol</string>
+    <string name="password_again">Şifre Tekrar</string>
+    <string name="full_name">Ad Soyad</string>
+    <string name="login_question">Zaten bir hesabınız var mı?</string>
+    <string name="create">Oluştur</string>
+    <string name="update_password">Şifre Güncelle</string>
+    <string name="current_password">Mevcut Şifre</string>
+    <string name="update">Güncelle</string>
+    <string name="rooms">Odalar</string>
+    <string name="add_room">Oda Ekle</string>
+    <string name="profile">Profil</string>
+    <string name="create_room">Oda Oluştur</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="type_room_name">Oda Adı Giriniz</string>
+    <string name="logout">Çıkış Yap</string>
+</resources>

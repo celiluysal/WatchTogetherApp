@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "917972085374",
+    "firebase_url": "https://watchtogetherapp-ec-default-rtdb.firebaseio.com",
+    "project_id": "watchtogetherapp-ec",
+    "storage_bucket": "watchtogetherapp-ec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:917972085374:android:79e13c541f0be90f30c62f",
+        "android_client_info": {
+          "package_name": "com.celiluysal.watchtogetherapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "917972085374-8cd9cf3vcrfo7481he0f69o524vdt55l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWZj8aku8p48yeAf0ILV6oExRTyhHB1wM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "917972085374-8cd9cf3vcrfo7481he0f69o524vdt55l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "917972085374-vai8b5s3o44prfiq38c1rnl52f4jmk1f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.demo.WatchTogether"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
