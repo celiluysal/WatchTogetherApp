@@ -27,7 +27,6 @@ class FirebaseManager {
         dict["avatarId"] = request.avatarId
         dict["fullName"] = request.fullName
         dict["email"] = request.email
-        dict["birthdate"] = request.birthdate
 
         dbRef.child("Users").child(uid).setValue(dict)
                 .addOnSuccessListener {
@@ -50,7 +49,6 @@ class FirebaseManager {
                                         avatarId = request.avatarId,
                                         fullName = request.fullName,
                                         email = request.email,
-                                        birthdate = request.birthdate,
                                 )
                                 Result.invoke(user, "")
                             } else Result.invoke(null, error)
@@ -72,7 +70,6 @@ class FirebaseManager {
                             avatarId = dict["avatarId"].toString().toInt(),
                             fullName = dict["fullName"] as String,
                             email = dict["email"] as String,
-                            birthdate = dict["birthdate"] as String,
                     )
                     Result.invoke(user,"")
                 }

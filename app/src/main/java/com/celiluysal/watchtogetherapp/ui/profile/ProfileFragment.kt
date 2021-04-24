@@ -1,16 +1,20 @@
 package com.celiluysal.watchtogetherapp.ui.profile
 
 import android.content.Intent
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.browser.customtabs.CustomTabsClient.getPackageName
+import androidx.lifecycle.ViewModelProvider
+import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.BaseFragment
 import com.celiluysal.watchtogetherapp.databinding.ProfileFragmentBinding
 import com.celiluysal.watchtogetherapp.ui.login.LoginActivity
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import com.celiluysal.watchtogetherapp.utils.WTUtils
+
 
 class ProfileFragment : BaseFragment<ProfileFragmentBinding, ProfileViewModel>() {
 
@@ -45,9 +49,15 @@ class ProfileFragment : BaseFragment<ProfileFragmentBinding, ProfileViewModel>()
         }
 
 
-        binding.textViewFullName.text = WTSessionManager.shared.user.fullName
-        binding.textViewEmail.text = WTSessionManager.shared.user.email
+        val avatarId = 5
 
+        activity?.let { activity ->
+            WTUtils.shared.getAvatarResId(activity, avatarId)?.let {
+                binding.avatarContainer.imageViewAvatar.setImageResource(it)
+            }
+        }
+
+//        binding.avatarContainer.imageViewAvatar.setImageResource(R.drawable.ic_avatar_1)
 
         return binding.root
     }

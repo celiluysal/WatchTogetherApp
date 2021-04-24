@@ -15,15 +15,15 @@ class ProfileViewModel : ViewModel() {
     val wtUser = MutableLiveData<WTUser>()
 
     fun refresh(){
-        if (wtUser.value != null)
-            wtUser.value.apply {  }
-        else
-            fetchUser()
+        WTSessionManager.shared.user.let {
+            if (it != null)
+                wtUser.value = it
+            else
+                fetchUser()
+        }
     }
 
-    fun fetchUser() {
-
-        Log.e("ProfileViewModel","fetchUser")
+    private fun fetchUser() {
         loading.value = true
         WTSessionManager.shared.fetchUser { success: Boolean, error: String? ->
             Log.e("ProfileViewModel","fetchUser1")

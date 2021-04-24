@@ -20,44 +20,9 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/imageViewAvatar"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    app:srcCompat="@drawable/ic_avatar_m_1"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <View
-                    android:id="@+id/view"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="24dp"
-                    android:layout_marginRight="24dp"
-                    android:layout_marginBottom="10dp"
-                    android:background="@drawable/cricle"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-                <ImageView
-                    android:id="@+id/imageViewEditAvatar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_edit"
-                    app:layout_constraintBottom_toBottomOf="@+id/view"
-                    app:layout_constraintEnd_toEndOf="@+id/view"
-                    app:layout_constraintStart_toStartOf="@+id/view"
-                    app:layout_constraintTop_toTopOf="@+id/view" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-
+            <include
+                android:id="@+id/avatarContainer"
+                layout="@layout/item_avatar_container"/>
 
             <TextView
                 android:id="@+id/textViewFullName"
@@ -71,7 +36,7 @@
                 android:id="@+id/textViewEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:textSize="18sp"
                 android:text="@string/email"/>
 
