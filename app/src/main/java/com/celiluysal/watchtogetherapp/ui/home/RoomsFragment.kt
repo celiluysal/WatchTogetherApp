@@ -24,15 +24,8 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-
-        activity?.supportFragmentManager?.let {
-            AvatarPickerDialog().show(it, "deneme")
-        }
-
-
-
 
 
         return binding.root

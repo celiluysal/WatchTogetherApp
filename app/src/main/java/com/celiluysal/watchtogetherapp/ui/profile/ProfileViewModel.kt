@@ -23,6 +23,27 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
+    fun logout() {
+        WTSessionManager.shared.logOut()
+    }
+
+    fun updateAvatar(id: Int){
+        loading.value = true
+        WTSessionManager.shared.updateAvatar(id) { wtUser: WTUser?, error: String? ->
+            if (wtUser != null) {
+                loading.value = false
+                loadError.value = false
+                this.wtUser.value = wtUser
+                Log.e("ProfileViewModel","updateAvatar success")
+            } else {
+                loading.value = false
+                loadError.value = true
+                errorMessage.value = error
+                Log.e("ProfileViewModel", error!!)
+            }
+        }
+    }
+
     private fun fetchUser() {
         loading.value = true
         WTSessionManager.shared.fetchUser { success: Boolean, error: String? ->
@@ -30,7 +51,7 @@ class ProfileViewModel : ViewModel() {
             if (success) {
                 wtUser.value = WTSessionManager.shared.user
                 loading.value = false
-                Log.e("ProfileViewModel","success")
+                Log.e("ProfileViewModel","fetchUser success")
             } else {
                 loading.value = false
                 loadError.value = true

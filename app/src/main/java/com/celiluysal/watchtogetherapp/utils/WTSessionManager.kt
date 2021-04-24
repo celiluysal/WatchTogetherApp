@@ -16,7 +16,6 @@ class WTSessionManager {
 
     fun loggedIn(user: WTUser) {
         this.user = user
-        Log.e("WTSessionManager","loggedIn")
         Log.e("WTSessionManager","loggedIn"+ user.email.toString())
     }
 
@@ -26,13 +25,13 @@ class WTSessionManager {
 
     fun fetchUser(Result: (success: Boolean, error: String?) -> Unit) {
         val currentUser = firebaseManager.getCurrentUser()
-        Log.e("WTSessionManager","fetchUser")
+//        Log.e("WTSessionManager","fetchUser")
 
 
         currentUser?.let { firebaseUser ->
             firebaseManager.fetchUserInfo(firebaseUser.uid) { wtUser: WTUser?, error: String? ->
                 if (wtUser != null){
-                    Log.e("WTSessionManager","fetchUserInfo")
+//                    Log.e("WTSessionManager","fetchUserInfo")
 
                     loggedIn(wtUser)
                     Result.invoke(true, "")
@@ -41,6 +40,17 @@ class WTSessionManager {
                 }
             }
 
+        }
+    }
+
+    fun updateAvatar(id: Int, Result: (user: WTUser?, error: String?) -> Unit) {
+        user?.let { user ->
+            FirebaseManager.shared.updateAvatar(user, id) { wtUser: WTUser?, error: String? ->
+                if (wtUser != null)
+                    Result.invoke(wtUser, null)
+                else
+                    Result.invoke(wtUser, error)
+            }
         }
     }
 

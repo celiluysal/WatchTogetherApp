@@ -6,6 +6,7 @@ import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.Firebase.RegisterRequestModel
 import com.celiluysal.watchtogetherapp.Firebase.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import com.celiluysal.watchtogetherapp.utils.WTUtils
 
 class RegisterViewModel : ViewModel() {
 
@@ -13,13 +14,17 @@ class RegisterViewModel : ViewModel() {
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
 
+    val avatarId = MutableLiveData<Int>().apply { postValue(
+        (1..WTUtils.shared.avatarCount).random()
+    ) }
+
     fun register(request: RegisterRequestModel) {
         loading.value = true
         FirebaseManager.shared.register(request) { wtUser: WTUser?, error: String? ->
             if (wtUser != null) {
                 login(request.email, request.password)
-                loadError.value = false
-                loading.value = false
+//                loadError.value = false
+//                loading.value = false
             } else {
                 errorMessage.value = error
                 loadError.value = true
@@ -30,11 +35,17 @@ class RegisterViewModel : ViewModel() {
     }
 
     private fun login(email: String, password: String) {
+        loading.value = true
         FirebaseManager.shared.login(email, password) { wtUser: WTUser?, error: String? ->
-            if (wtUser != null)
+            if (wtUser != null) {
+                loadError.postValue(false)
+                loading.value = false
                 WTSessionManager.shared.loggedIn(wtUser)
-            else
+            } else {
                 errorMessage.value = error
+                loadError.value = true
+                loading.value = false
+            }
         }
     }
 

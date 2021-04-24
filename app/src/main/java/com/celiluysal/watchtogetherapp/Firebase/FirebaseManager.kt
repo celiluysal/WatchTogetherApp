@@ -90,6 +90,20 @@ class FirebaseManager {
                 }
     }
 
+    fun updateAvatar(wtUser: WTUser, id: Int, Result: (user: WTUser?, error: String?) -> Unit) {
+        wtUser.userId?.let { uid ->
+            dbRef.child("Users").child(uid).child("avatarId").setValue(id)
+                .addOnSuccessListener{
+                    wtUser.avatarId = id
+                    Result.invoke(wtUser, null)
+                }
+                .addOnFailureListener {
+                    Result.invoke(null, it.localizedMessage)
+                }
+        }
+
+    }
+
     fun getCurrentUser(): FirebaseUser? = auth.currentUser
 
     fun signOut() = auth.signOut()

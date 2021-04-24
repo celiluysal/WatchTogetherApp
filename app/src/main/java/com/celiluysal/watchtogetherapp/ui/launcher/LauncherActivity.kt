@@ -4,10 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatDelegate
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
-import com.celiluysal.watchtogetherapp.denemeActivity
 import com.celiluysal.watchtogetherapp.ui.login.LoginActivity
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
@@ -20,6 +17,7 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         intent = Intent(this, MainActivity::class.java)
+
         if (WTSessionManager.shared.isLoggedIn()) {
             WTSessionManager.shared.fetchUser() { success, error ->
                 if (success) {
