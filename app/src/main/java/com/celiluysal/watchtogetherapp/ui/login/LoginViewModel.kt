@@ -3,7 +3,7 @@ package com.celiluysal.watchtogetherapp.ui.login
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
-import com.celiluysal.watchtogetherapp.Firebase.WTUser
+import com.celiluysal.watchtogetherapp.model.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 
 class LoginViewModel : ViewModel() {

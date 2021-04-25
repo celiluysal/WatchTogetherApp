@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.Firebase.RegisterRequestModel
-import com.celiluysal.watchtogetherapp.Firebase.WTUser
+import com.celiluysal.watchtogetherapp.model.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 import com.celiluysal.watchtogetherapp.utils.WTUtils
 
@@ -23,8 +23,6 @@ class RegisterViewModel : ViewModel() {
         FirebaseManager.shared.register(request) { wtUser: WTUser?, error: String? ->
             if (wtUser != null) {
                 login(request.email, request.password)
-//                loadError.value = false
-//                loading.value = false
             } else {
                 errorMessage.value = error
                 loadError.value = true

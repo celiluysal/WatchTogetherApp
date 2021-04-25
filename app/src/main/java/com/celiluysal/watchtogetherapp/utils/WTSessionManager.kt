@@ -2,7 +2,7 @@ package com.celiluysal.watchtogetherapp.utils
 
 import android.util.Log
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
-import com.celiluysal.watchtogetherapp.Firebase.WTUser
+import com.celiluysal.watchtogetherapp.model.WTUser
 
 class WTSessionManager {
     companion object {
