@@ -15,4 +15,9 @@
         <!-- Customize your theme here. -->
         <item name="fontFamily">@font/kanit</item>
     </style>
+
+    <style name="logout_button" parent="Theme.WatchTogetherApp">
+        <item name="colorPrimary">#9d0208</item>
+    </style>
+
 </resources>

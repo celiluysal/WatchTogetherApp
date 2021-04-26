@@ -5,4 +5,13 @@ data class WTUser(
     var avatarId : Int,
     var fullName : String,
     var email : String
-)
+) {
+    fun toDict(): HashMap<*,*> {
+        return hashMapOf<String, Any?>(
+            "userId" to userId,
+            "avatarId" to avatarId,
+            "fullName" to fullName,
+            "email" to email
+        )
+    }
+}

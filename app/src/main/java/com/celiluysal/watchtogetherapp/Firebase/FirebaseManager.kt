@@ -1,12 +1,17 @@
 package com.celiluysal.watchtogetherapp.Firebase
 
+import com.celiluysal.watchtogetherapp.model.WTMessage
 import com.celiluysal.watchtogetherapp.model.WTRoom
 import com.celiluysal.watchtogetherapp.model.WTUser
+import com.celiluysal.watchtogetherapp.model.WTVideo
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import java.util.*
 import kotlin.collections.HashMap
 
 class FirebaseManager {
@@ -18,71 +23,127 @@ class FirebaseManager {
     private var auth = Firebase.auth
 
 
-//    func joinRoom(user: WTUser, roomId: String, password: String?, completion: @escaping ((Result<Room, PresentableError>) -> Void)) {
-//
-//        self.dbRef.child("Rooms").child(roomId).observe(.value) { (snapshot) in
-//
-//                guard let room = self.fetchRoomFrom(snapshot: snapshot) else {
-//            completion(.failure(.init(message: "Parse Error")))
-//            return
-//        }
-//
-//            if let password = room.password, password != password {
-//                completion(.failure(.init(message: "Wrong Password")))
-//            } else {
-//                self.addUserToRoom(roomId: roomId, user: user) { (result) in
-//                        switch result {
-//                    case .success:
-//                    completion(.success(room))
-//                    break
-//                    case let .failure(error):
-//                    completion(.failure(error))
-//                }
-//                }
-//            }
-//
-//        }
-//
-//    }
 
-    fun joinRoom(roomId: String,
-                 password: String?,
-                 wtUser: WTUser,
-                 Result: ((success: Boolean, error: String?) -> Unit)) {
-        dbRef.child("Rooms").child(roomId).get()
-            .addOnSuccessListener { dataSnapshot ->
 
+
+    fun createRoom(
+        roomName: String,
+        password: String?,
+        owner: WTUser,
+        Result: ((wtRoom: WTRoom?, error: String?) -> Unit)
+    ) {
+        val roomId = UUID.randomUUID().toString()
+        dbRef.child("Rooms").child(roomId)
+            .setValue(
+                hashMapOf<String, Any?>(
+                    "roomId" to roomId,
+                    "roomName" to roomName,
+                    "password" to password,
+                    "ownerId" to owner.userId
+                )
+            )
+            .addOnSuccessListener {
+                joinRoom(roomId, password, owner, Result)
             }
             .addOnFailureListener {
-                Result.invoke(false, it.localizedMessage)
+                Result.invoke(null, it.localizedMessage)
             }
+
+
+    }
+
+    fun joinRoom(
+        roomId: String,
+        password: String?,
+        wtUser: WTUser,
+        Result: ((wtRoom: WTRoom?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot)
+                    if (room == null) {
+                        Result.invoke(null, "Room parse error")
+                        return
+                    }
+
+                    if (password != null && password != room.password)
+                        Result.invoke(null, "Wrong password")
+                    else {
+                        addUserToRoom(room.roomId, wtUser){ success: Boolean, error: String? ->
+                            if (success)
+                                Result.invoke(room, null)
+                            else
+                                Result.invoke(null, error)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(null, error.details)
+                }
+
+            })
+
 
     }
 
     fun fetchRoom(dataSnapshot: DataSnapshot) {
-        
+
     }
 
 
-    fun addUserToRoom(
+    private fun addUserToRoom(
         roomId: String,
         wtUser: WTUser,
         Result: ((success: Boolean, error: String?) -> Unit)
     ) {
         dbRef.child("Rooms").child(roomId).child("Users").child(wtUser.userId)
             .setValue(
-                hashMapOf<String, Any?>(
-                    "userId" to wtUser.userId,
-                    "avatarId" to wtUser.avatarId,
-                    "fullName" to wtUser.fullName,
-                    "email" to wtUser.email
-                )
+                wtUser.userId
             ).addOnSuccessListener {
                 Result.invoke(true, null)
             }
             .addOnFailureListener {
                 Result.invoke(false, it.localizedMessage)
             }
+    }
+
+
+    fun addVideoToRoomPlaylist(
+        roomId: String,
+        video: WTVideo,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Playlist").push()
+            .setValue(
+                video.toDict()
+            )
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
+
+
+    fun addMessageToRoom(
+        roomId: String,
+        message: WTMessage,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Messages").push()
+            .setValue(
+                message.toDict()
+            )
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+
     }
 
 
@@ -108,7 +169,10 @@ class FirebaseManager {
 
     }
 
-    fun register(request: RegisterRequestModel, Result: (user: WTUser?, error: String?) -> Unit) {
+    fun register(
+        request: RegisterRequestModel,
+        Result: (user: WTUser?, error: String?) -> Unit
+    ) {
         auth.createUserWithEmailAndPassword(request.email, request.password)
             .addOnSuccessListener {
                 auth.currentUser?.let { firebaseUser ->
@@ -130,7 +194,10 @@ class FirebaseManager {
             }
     }
 
-    fun fetchUserInfo(uid: String, Result: (user: WTUser?, error: String?) -> Unit) {
+    fun fetchUserInfo(
+        uid: String,
+        Result: (user: WTUser?, error: String?) -> Unit
+    ) {
         dbRef.child("Users").child(uid).get()
             .addOnSuccessListener { dataSnapshot ->
                 val dict = dataSnapshot.value as HashMap<*, *>
@@ -147,7 +214,11 @@ class FirebaseManager {
             }
     }
 
-    fun login(email: String, password: String, Result: (user: WTUser?, error: String?) -> Unit) {
+    fun login(
+        email: String,
+        password: String,
+        Result: (user: WTUser?, error: String?) -> Unit
+    ) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 authResult.user?.let {
@@ -159,7 +230,11 @@ class FirebaseManager {
             }
     }
 
-    fun updateAvatar(wtUser: WTUser, id: Int, Result: (user: WTUser?, error: String?) -> Unit) {
+    fun updateAvatar(
+        wtUser: WTUser,
+        id: Int,
+        Result: (user: WTUser?, error: String?) -> Unit
+    ) {
         wtUser.userId?.let { uid ->
             dbRef.child("Users").child(uid).child("avatarId").setValue(id)
                 .addOnSuccessListener {

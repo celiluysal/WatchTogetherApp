@@ -57,7 +57,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:visibility="gone">
+                android:visibility="visible">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@color/text_color"/>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textInputLayoutCurrentPassword"
@@ -132,11 +138,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
                     android:text="@string/update"
                     android:textAllCaps="false"
                     android:textSize="18sp"
                     android:paddingVertical="10dp"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@color/text_color"/>
 
             </LinearLayout>
 
@@ -149,7 +161,8 @@
                 android:text="@string/logout"
                 android:textAllCaps="false"
                 android:textSize="18sp"
-                android:paddingVertical="10dp"/>
+                android:paddingVertical="10dp"
+                android:theme="@style/logout_button"/>
 
         </LinearLayout>
 
