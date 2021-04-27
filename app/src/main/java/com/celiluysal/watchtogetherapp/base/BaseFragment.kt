@@ -12,7 +12,7 @@ import androidx.viewbinding.ViewBinding
 
 abstract class BaseFragment<VB: ViewBinding, VM: ViewModel>: Fragment() {
     protected lateinit var binding: VB
-    protected lateinit var viewModel: VM
+    lateinit var viewModel: VM
 
 //    private val viewModel by lazy {
 ////        (activity as BaseActivity<*,*>).defaultViewModelProviderFactory.let {

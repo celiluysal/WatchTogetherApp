@@ -1,4 +1,6 @@
-package com.celiluysal.watchtogetherapp.model
+package com.celiluysal.watchtogetherapp.models
+
+import java.io.Serializable
 
 data class WTRoom(
     var roomId: String,
@@ -9,7 +11,7 @@ data class WTRoom(
     var playlist: MutableList<WTVideo>?,
     var users: MutableList<String>,
     var messages: MutableList<WTMessage>?
-) {
+): Serializable {
     fun toDict(): HashMap<*, *> {
         return hashMapOf<String, Any?>(
             "roomId" to roomId,

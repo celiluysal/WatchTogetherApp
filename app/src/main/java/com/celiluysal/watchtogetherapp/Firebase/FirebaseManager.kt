@@ -1,9 +1,10 @@
 package com.celiluysal.watchtogetherapp.Firebase
 
-import com.celiluysal.watchtogetherapp.model.WTMessage
-import com.celiluysal.watchtogetherapp.model.WTRoom
-import com.celiluysal.watchtogetherapp.model.WTUser
-import com.celiluysal.watchtogetherapp.model.WTVideo
+import android.util.Log
+import com.celiluysal.watchtogetherapp.models.WTMessage
+import com.celiluysal.watchtogetherapp.models.WTRoom
+import com.celiluysal.watchtogetherapp.models.WTUser
+import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
@@ -21,10 +22,6 @@ class FirebaseManager {
 
     private var dbRef = Firebase.database.reference
     private var auth = Firebase.auth
-
-
-
-
 
     fun createRoom(
         roomName: String,
@@ -70,9 +67,9 @@ class FirebaseManager {
                     if (password != null && password != room.password)
                         Result.invoke(null, "Wrong password")
                     else {
-                        addUserToRoom(room.roomId, wtUser){ success: Boolean, error: String? ->
+                        addUserToRoom(room.roomId, wtUser) { success: Boolean, error: String? ->
                             if (success)
-                                Result.invoke(room, null)
+                                fetchRoom(roomId, Result)
                             else
                                 Result.invoke(null, error)
                         }
@@ -84,12 +81,61 @@ class FirebaseManager {
                 }
 
             })
+    }
 
+
+    fun fetchRooms(
+        Result: ((wtRooms: MutableList<WTRoom>?, error: String?) -> Unit)
+    ) {
+        var deneme = dbRef.child("Rooms").get()
+
+
+        dbRef.child("Rooms").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
+                else {
+                    Result.invoke(null, "Room parse error")
+                    return
+                }
+
+                val rooms = mutableListOf<WTRoom>()
+
+                for (roomId in value.keys) {
+                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId.toString()))
+                    if (room != null)
+                        rooms.add(room)
+                }
+
+                Result.invoke(rooms, null)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Result.invoke(null, error.details)
+            }
+
+        })
 
     }
 
-    fun fetchRoom(dataSnapshot: DataSnapshot) {
+    fun fetchRoom(roomId: String, Result: ((wtRoom: WTRoom?, error: String?) -> Unit)) {
+        dbRef.child("Rooms").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
+                else {
+                    Result.invoke(null, "Room parse error")
+                    return
+                }
+                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId))
+                    if (room != null)
+                        Result.invoke(room, null)
+                Log.e("fetchRoom", "on data change")
 
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Result.invoke(null, error.details)
+            }
+        })
     }
 
 

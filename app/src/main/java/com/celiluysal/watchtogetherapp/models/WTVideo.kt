@@ -1,4 +1,6 @@
-package com.celiluysal.watchtogetherapp.model
+package com.celiluysal.watchtogetherapp.models
+
+import java.io.Serializable
 
 data class WTVideo(
     var videoId: String,
@@ -6,7 +8,7 @@ data class WTVideo(
     var thumbnail: String,
     var channel: String,
     var duration: Int
-) {
+): Serializable {
     fun toDict(): HashMap<*,*>{
         return hashMapOf<String, Any?>(
             "videoId" to videoId,

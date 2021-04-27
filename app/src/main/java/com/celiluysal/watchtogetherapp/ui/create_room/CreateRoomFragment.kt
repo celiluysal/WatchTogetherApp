@@ -1,9 +1,8 @@
 package com.celiluysal.watchtogetherapp.ui.create_room
 
+import android.content.Intent
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
-import android.util.Patterns
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.CreateRoomFragmentBinding
+import com.celiluysal.watchtogetherapp.ui.room.RoomActivity
 
 class CreateRoomFragment : Fragment() {
 
@@ -37,6 +37,7 @@ class CreateRoomFragment : Fragment() {
                     binding.textInputEditTextPassword.text.toString()
                 }
                 viewModel.createRoom(binding.textInputEditTextRoomName.text.toString(), password)
+                observeViewModel()
             }
 
         }
@@ -44,6 +45,17 @@ class CreateRoomFragment : Fragment() {
 
 
         return binding.root
+    }
+
+    private fun observeViewModel() {
+        viewModel.wtRoom.observe(viewLifecycleOwner, { wtRoom ->
+            activity?.let {
+                val intent = Intent(context, RoomActivity::class.java)
+                intent.putExtra("wtRoom", wtRoom)
+                it.startActivity(intent)
+                it.finish()
+            }
+        } )
     }
 
     private fun checkFields(): Boolean {

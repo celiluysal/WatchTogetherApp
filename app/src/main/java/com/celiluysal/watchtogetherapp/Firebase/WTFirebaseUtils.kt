@@ -1,9 +1,9 @@
 package com.celiluysal.watchtogetherapp.Firebase
 
-import com.celiluysal.watchtogetherapp.model.WTContent
-import com.celiluysal.watchtogetherapp.model.WTMessage
-import com.celiluysal.watchtogetherapp.model.WTRoom
-import com.celiluysal.watchtogetherapp.model.WTVideo
+import com.celiluysal.watchtogetherapp.models.WTContent
+import com.celiluysal.watchtogetherapp.models.WTMessage
+import com.celiluysal.watchtogetherapp.models.WTRoom
+import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.google.firebase.database.DataSnapshot
 
 class WTFirebaseUtils {
@@ -56,6 +56,8 @@ class WTFirebaseUtils {
     }
 
     fun snapshotToPlaylist(playlistSnapshot: DataSnapshot): MutableList<WTVideo>? {
+        if (playlistSnapshot.value == null)
+            return null
         val playlist = mutableListOf<WTVideo>()
         for (child in playlistSnapshot.children.iterator()) {
             val videoDict = child.value as HashMap<*, *>
@@ -72,7 +74,9 @@ class WTFirebaseUtils {
         return playlist
     }
 
-    fun snapshotToMessages(messagesSnapshot: DataSnapshot): MutableList<WTMessage> {
+    fun snapshotToMessages(messagesSnapshot: DataSnapshot): MutableList<WTMessage>? {
+        if (messagesSnapshot.value == null)
+            return null
         val messages = mutableListOf<WTMessage>()
         for (child in messagesSnapshot.children.iterator()) {
             val messageDict = child.value as HashMap<*, *>

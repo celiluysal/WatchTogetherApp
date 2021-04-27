@@ -3,7 +3,7 @@ package com.celiluysal.watchtogetherapp.ui.profile
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.celiluysal.watchtogetherapp.model.WTUser
+import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 
 class ProfileViewModel : ViewModel() {
