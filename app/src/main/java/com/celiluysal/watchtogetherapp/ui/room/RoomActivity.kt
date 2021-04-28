@@ -2,12 +2,17 @@ package com.celiluysal.watchtogetherapp.ui.room
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.ui.login.LoginViewModel
+import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
+
+    private lateinit var chatRecyclerViewAdapter: ChatRecyclerViewAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -16,14 +21,15 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         viewModel.fetchRoom(roomId)
 
         viewModel.wtRoom.observe(this, { wtRoom ->
-            var text = "mesaj yok"
+
             wtRoom.messages?.let { messages ->
-                for (message in messages){
-                    text = ""
-                    text += message.ownerId + ":\n"
-                    text += message.text + "\n\n"
+                binding.recyclerViewChat.layoutManager = LinearLayoutManager(this)
+                chatRecyclerViewAdapter = ChatRecyclerViewAdapter(messages, WTSessionManager.shared.user!!.userId)
+                binding.recyclerViewChat.adapter = chatRecyclerViewAdapter
+                binding.recyclerViewChat.scrollToPosition(messages.size-1)
+                binding.recyclerViewChat.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+                    binding.recyclerViewChat.scrollToPosition(messages.size-1)
                 }
-                binding.textViewInfo.text = text
             }
 
         })
@@ -34,6 +40,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             val text = binding.editTextMessage.text.toString()
             if (text.isNotEmpty())
                 viewModel.addMessageToRoom(text)
+            binding.editTextMessage.text.clear()
         }
 
 

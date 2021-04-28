@@ -37,7 +37,7 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
     fun observeViewModel(){
         viewModel.fetchRooms()
         viewModel.wtRooms.observe(viewLifecycleOwner, { wtRooms ->
-            binding.recyclerViewRooms.layoutManager  = LinearLayoutManager(context)
+            binding.recyclerViewRooms.layoutManager = LinearLayoutManager(context)
             roomsRecyclerViewAdapter = RoomsRecyclerViewAdapter(wtRooms, this)
             binding.recyclerViewRooms.adapter = roomsRecyclerViewAdapter
         })
