@@ -6,20 +6,27 @@
     tools:context=".ui.home.RoomsFragment"
     android:background="@color/background">
 
-    <Button
-        android:id="@+id/buttonTest"
-        android:layout_width="wrap_content"
+    <include
+        android:id="@+id/include"
+        layout="@layout/item_message_from"
         android:layout_height="wrap_content"
-        android:text="Test"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"/>
+
+    <include
+        android:id="@+id/include2"
+        layout="@layout/item_message_to"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/include"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewRooms"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/buttonTest"
+        android:layout_below="@+id/include2"
         tools:listitem="@layout/item_room_card"/>
 
 
