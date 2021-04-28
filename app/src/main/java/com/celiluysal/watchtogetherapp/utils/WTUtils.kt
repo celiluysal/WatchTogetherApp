@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.util.Log
 import com.celiluysal.watchtogetherapp.R
+import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.ui.dialog.AvatarImage
 
 class WTUtils {
@@ -15,7 +16,7 @@ class WTUtils {
 
     fun getAvatarResId(context: Context?, avatarId: Int): Int {
         context?.resources?.getIdentifier(
-            "ic_avatar_$avatarId", "drawable", context.packageName
+            "ic_avatar_$avatarId", "drawable", "com.celiluysal.watchtogetherapp"
         )?.let {
             return it
         }

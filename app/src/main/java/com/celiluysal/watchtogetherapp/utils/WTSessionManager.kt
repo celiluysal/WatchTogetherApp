@@ -29,7 +29,7 @@ class WTSessionManager {
 
 
         currentUser?.let { firebaseUser ->
-            firebaseManager.fetchUserInfo(firebaseUser.uid) { wtUser: WTUser?, error: String? ->
+            firebaseManager.fetchUser(firebaseUser.uid) { wtUser: WTUser?, error: String? ->
                 if (wtUser != null){
 //                    Log.e("WTSessionManager","fetchUserInfo")
 

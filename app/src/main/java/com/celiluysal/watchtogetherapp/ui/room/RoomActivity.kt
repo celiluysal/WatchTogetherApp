@@ -1,6 +1,7 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
 import android.os.Bundle
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.celiluysal.watchtogetherapp.base.BaseActivity
@@ -20,21 +21,8 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         val roomId = intent.extras?.get("wtRoomId") as String
         viewModel.fetchRoom(roomId)
 
-        viewModel.wtRoom.observe(this, { wtRoom ->
 
-            wtRoom.messages?.let { messages ->
-                binding.recyclerViewChat.layoutManager = LinearLayoutManager(this)
-                chatRecyclerViewAdapter = ChatRecyclerViewAdapter(messages, WTSessionManager.shared.user!!.userId)
-                binding.recyclerViewChat.adapter = chatRecyclerViewAdapter
-                binding.recyclerViewChat.scrollToPosition(messages.size-1)
-                binding.recyclerViewChat.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-                    binding.recyclerViewChat.scrollToPosition(messages.size-1)
-                }
-            }
-
-        })
-
-
+        observeRoomUsers()
 
         binding.imageViewSend.setOnClickListener {
             val text = binding.editTextMessage.text.toString()
@@ -43,11 +31,29 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             binding.editTextMessage.text.clear()
         }
 
+    }
 
 
-//        createRoomViewModel = ViewModelProvider(Main).get(CreateRoomViewModel::class.java)
-//        createRoomViewModel.wtRoom.value
+    private fun observeRoomUsers() {
+        viewModel.wtUser.observe(this, Observer {
+            viewModel.wtUsers.observe(this, { wtUsers ->
+                observeRoom()
+            })
+        })
+    }
 
+    private fun observeRoom(){
+        viewModel.wtRoom.observe(this, { wtRoom ->
+            wtRoom.messages?.let { messages ->
+                binding.recyclerViewChat.layoutManager = LinearLayoutManager(this)
+                chatRecyclerViewAdapter = ChatRecyclerViewAdapter(messages, viewModel.wtUser.value!!, viewModel.wtUsers.value!!)
+                binding.recyclerViewChat.adapter = chatRecyclerViewAdapter
+                binding.recyclerViewChat.scrollToPosition(messages.size-1)
+                binding.recyclerViewChat.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+                    binding.recyclerViewChat.scrollToPosition(messages.size-1)
+                }
+            }
+        })
     }
 
     override fun getViewBinding(): ActivityRoomBinding {

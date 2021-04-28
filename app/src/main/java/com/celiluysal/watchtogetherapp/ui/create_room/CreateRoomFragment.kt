@@ -51,7 +51,7 @@ class CreateRoomFragment : Fragment() {
         viewModel.wtRoom.observe(viewLifecycleOwner, { wtRoom ->
             activity?.let {
                 val intent = Intent(context, RoomActivity::class.java)
-                intent.putExtra("wtRoom", wtRoom)
+                intent.putExtra("wtRoomId", wtRoom.roomId)
                 it.startActivity(intent)
                 it.finish()
             }

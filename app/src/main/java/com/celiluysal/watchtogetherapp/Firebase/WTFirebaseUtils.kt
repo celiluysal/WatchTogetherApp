@@ -1,9 +1,6 @@
 package com.celiluysal.watchtogetherapp.Firebase
 
-import com.celiluysal.watchtogetherapp.models.WTContent
-import com.celiluysal.watchtogetherapp.models.WTMessage
-import com.celiluysal.watchtogetherapp.models.WTRoom
-import com.celiluysal.watchtogetherapp.models.WTVideo
+import com.celiluysal.watchtogetherapp.models.*
 import com.google.firebase.database.DataSnapshot
 
 class WTFirebaseUtils {
@@ -25,6 +22,18 @@ class WTFirebaseUtils {
             playlist = snapshotToPlaylist(roomSnapshot.child("Playlist")),
             users = snapshotToUsers(roomSnapshot.child("Users")),
             messages = snapshotToMessages(roomSnapshot.child("Messages"))
+        )
+    }
+
+    fun snapshotToUser(usersSnapshot: DataSnapshot): WTUser? {
+        val userDict = if (usersSnapshot.value != null)
+            usersSnapshot.value as HashMap<*,*> else return null
+
+        return WTUser(
+            userId = userDict["userId"] as String,
+            avatarId = userDict["avatarId"].toString().toInt(),
+            fullName = userDict["fullName"] as String,
+            email = userDict["email"] as String
         )
     }
 

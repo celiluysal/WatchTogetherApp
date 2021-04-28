@@ -87,9 +87,6 @@ class FirebaseManager {
     fun fetchRooms(
         Result: ((wtRooms: MutableList<WTRoom>?, error: String?) -> Unit)
     ) {
-        var deneme = dbRef.child("Rooms").get()
-
-
         dbRef.child("Rooms").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
@@ -97,24 +94,19 @@ class FirebaseManager {
                     Result.invoke(null, "Room parse error")
                     return
                 }
-
                 val rooms = mutableListOf<WTRoom>()
-
                 for (roomId in value.keys) {
-                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId.toString()))
+                    val room =
+                        WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId.toString()))
                     if (room != null)
                         rooms.add(room)
                 }
-
                 Result.invoke(rooms, null)
             }
-
             override fun onCancelled(error: DatabaseError) {
                 Result.invoke(null, error.details)
             }
-
         })
-
     }
 
     fun fetchRoom(roomId: String, Result: ((wtRoom: WTRoom?, error: String?) -> Unit)) {
@@ -125,9 +117,9 @@ class FirebaseManager {
                     Result.invoke(null, "Room parse error")
                     return
                 }
-                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId))
-                    if (room != null)
-                        Result.invoke(room, null)
+                val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId))
+                if (room != null)
+                    Result.invoke(room, null)
                 Log.e("fetchRoom", "on data change")
 
             }
@@ -240,20 +232,50 @@ class FirebaseManager {
             }
     }
 
-    fun fetchUserInfo(
-        uid: String,
+
+
+    fun fetchUsers(
+        userIds: MutableList<String>,
+        Result: (wtUsers: MutableList<WTUser>?, error: String?) -> Unit
+    ) {
+        dbRef.child("Users").addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
+                else {
+                    Result.invoke(null, "User parse error")
+                    return
+                }
+                val users = mutableListOf<WTUser>()
+                for (userId in userIds) {
+                    val user =
+                        WTFirebaseUtils.shared.snapshotToUser(snapshot.child(userId))
+                    if (user != null)
+                        users.add(user)
+                }
+                Result.invoke(users, null)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+
+    fun fetchUser(
+        userId: String,
         Result: (user: WTUser?, error: String?) -> Unit
     ) {
-        dbRef.child("Users").child(uid).get()
+        dbRef.child("Users").child(userId).get()
             .addOnSuccessListener { dataSnapshot ->
                 val dict = dataSnapshot.value as HashMap<*, *>
                 val user = WTUser(
-                    userId = uid,
+                    userId = userId,
                     avatarId = dict["avatarId"].toString().toInt(),
                     fullName = dict["fullName"] as String,
                     email = dict["email"] as String,
                 )
-                Result.invoke(user, "")
+                Result.invoke(user, null)
             }
             .addOnFailureListener {
                 Result.invoke(null, it.localizedMessage)
@@ -268,7 +290,7 @@ class FirebaseManager {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 authResult.user?.let {
-                    fetchUserInfo(it.uid, Result)
+                    fetchUser(it.uid, Result)
                 }
             }
             .addOnFailureListener {

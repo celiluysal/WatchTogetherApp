@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTRoom
+import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -15,15 +16,30 @@ import java.util.*
 class RoomViewModel : ViewModel() {
 
     val wtRoom = MutableLiveData<WTRoom>()
+    val wtUser = MutableLiveData<WTUser>()
+    val wtUsers = MutableLiveData<MutableList<WTUser>>()
 
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
 
+    fun fetchUsers(userIds: MutableList<String>){
+        WTSessionManager.shared.user?.let { wtUser ->
+            this.wtUser.value = wtUser
+        }
+        FirebaseManager.shared.fetchUsers(userIds) {users, error ->
+            if (users != null && users.size > 0)
+                wtUsers.value = users
+            else
+                Log.e("fetchUsers", error!!)
+        }
+    }
+
     fun fetchRoom(roomId: String){
         FirebaseManager.shared.fetchRoom(roomId) { wtRoom: WTRoom?, error: String? ->
             if (wtRoom != null) {
                 Log.e("fetchRoom", "success")
+                fetchUsers(wtRoom.users)
                 this.wtRoom.value = wtRoom
             }
             else
