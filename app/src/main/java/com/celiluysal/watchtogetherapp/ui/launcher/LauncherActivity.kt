@@ -13,30 +13,23 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        Log.e("ds", "LauncherActivity onCreate")
         super.onCreate(savedInstanceState)
 
-        intent = Intent(this, MainActivity::class.java)
-
         if (WTSessionManager.shared.isLoggedIn()) {
-            WTSessionManager.shared.fetchUser() { success, error ->
+            WTSessionManager.shared.fetchUser { success, error ->
                 if (success) {
-                    intent = Intent(applicationContext, MainActivity::class.java)
-
-                    Log.e("LauncherActivity", intent.toString())
+                    startActivity(Intent(applicationContext, MainActivity::class.java))
+                    finish()
                 } else {
+                    startActivity(Intent(this, LoginActivity::class.java))
                     Log.e("LauncherActivity", error!!)
-                    intent = Intent(this, LoginActivity::class.java)
+                    finish()
                 }
             }
         } else {
-            intent = Intent(this, LoginActivity::class.java)
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
-        Log.e("LauncherActivity", intent.toString())
-        startActivity(intent)
-        finish()
-
-
     }
 
 }

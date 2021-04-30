@@ -1,6 +1,7 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -13,13 +14,20 @@ import com.celiluysal.watchtogetherapp.utils.WTUtils
 class ChatRecyclerViewAdapter(
     val messages: MutableList<WTMessage>,
     val wtUser: WTUser,
-    val wtUsers: MutableList<WTUser>
+    val wtUsers: MutableList<WTUser>,
+    val wtOldUsers: MutableList<WTUser>?
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private lateinit var avatarsDict: HashMap<*, *>
+    private var allUsers: MutableList<WTUser> = wtUsers
 
     init {
+        Log.e("ChatRecyclerViewAdapter", "wtusers "+wtUsers.size)
+        Log.e("ChatRecyclerViewAdapter", "all users "+allUsers.size)
+        Log.e("ChatRecyclerViewAdapter", "old users "+wtOldUsers?.size)
+        if (wtOldUsers != null)
+            allUsers.addAll(wtOldUsers)
 
+        Log.e("ChatRecyclerViewAdapter", "all users "+allUsers.size)
     }
 
     companion object {
@@ -33,7 +41,7 @@ class ChatRecyclerViewAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(wtMessage: WTMessage) {
-            val messageOwner = (wtUsers.filter { it.userId == wtMessage.ownerId })[0]
+            val messageOwner = (allUsers.filter { it.userId == wtMessage.ownerId })[0]
             binding.imageViewAvatar.setImageResource(
                 WTUtils.shared.getAvatarResId(
                     context,
@@ -48,7 +56,7 @@ class ChatRecyclerViewAdapter(
     private inner class MessageToViewHolder(val context: Context, val binding: ItemMessageToBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(wtMessage: WTMessage) {
-            val messageOwner = (wtUsers.filter { it.userId == wtMessage.ownerId })[0]
+            val messageOwner = (allUsers.filter { it.userId == wtMessage.ownerId })[0]
             binding.imageViewAvatar.setImageResource(
                 WTUtils.shared.getAvatarResId(
                     context,

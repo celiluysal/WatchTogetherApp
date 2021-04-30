@@ -1,6 +1,8 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -8,6 +10,7 @@ import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.ui.login.LoginViewModel
+import com.celiluysal.watchtogetherapp.ui.main.MainActivity
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
@@ -33,10 +36,27 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+//        leaveRoom()
+    }
+
+    private fun leaveRoom() {
+        viewModel.leaveRoom.observe(this, {
+            if (it) {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            } else
+                Log.e("RoomActivity", "leave fail")
+        })
+
+    }
+
 
     private fun observeRoomUsers() {
         viewModel.wtUser.observe(this, Observer {
-            viewModel.wtUsers.observe(this, { wtUsers ->
+            viewModel.wtUsers.observe(this, {
+                viewModel.wtOldUsers.observe(this, {})
                 observeRoom()
             })
         })
@@ -46,7 +66,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         viewModel.wtRoom.observe(this, { wtRoom ->
             wtRoom.messages?.let { messages ->
                 binding.recyclerViewChat.layoutManager = LinearLayoutManager(this)
-                chatRecyclerViewAdapter = ChatRecyclerViewAdapter(messages, viewModel.wtUser.value!!, viewModel.wtUsers.value!!)
+                chatRecyclerViewAdapter = ChatRecyclerViewAdapter(messages, viewModel.wtUser.value!!, viewModel.wtUsers.value!!, viewModel.wtOldUsers.value)
                 binding.recyclerViewChat.adapter = chatRecyclerViewAdapter
                 binding.recyclerViewChat.scrollToPosition(messages.size-1)
                 binding.recyclerViewChat.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->

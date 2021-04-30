@@ -1,6 +1,7 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
@@ -18,10 +19,19 @@ class RoomViewModel : ViewModel() {
     val wtRoom = MutableLiveData<WTRoom>()
     val wtUser = MutableLiveData<WTUser>()
     val wtUsers = MutableLiveData<MutableList<WTUser>>()
+    val wtOldUsers = MutableLiveData<MutableList<WTUser>>()
+
+    val leaveRoom = MutableLiveData<Boolean>()
 
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
+
+    fun leaveFromRoom(){
+        FirebaseManager.shared.leaveFromRoom(wtRoom.value!!.roomId, wtUser.value!!) {success, error ->
+            leaveRoom.value = success
+        }
+    }
 
     fun fetchUsers(userIds: MutableList<String>){
         WTSessionManager.shared.user?.let { wtUser ->
@@ -33,13 +43,26 @@ class RoomViewModel : ViewModel() {
             else
                 Log.e("fetchUsers", error!!)
         }
+
+    }
+
+    fun fetchOldUsers(userIds: MutableList<String>){
+        FirebaseManager.shared.fetchUsers(userIds) {users, error ->
+            if (users != null && users.size > 0)
+                wtOldUsers.value = users
+            else
+                Log.e("fetchUsers", error!!)
+        }
     }
 
     fun fetchRoom(roomId: String){
         FirebaseManager.shared.fetchRoom(roomId) { wtRoom: WTRoom?, error: String? ->
             if (wtRoom != null) {
                 Log.e("fetchRoom", "success")
+
+                wtRoom.oldUsers?.let { users -> fetchOldUsers(users) }
                 fetchUsers(wtRoom.users)
+
                 this.wtRoom.value = wtRoom
             }
             else

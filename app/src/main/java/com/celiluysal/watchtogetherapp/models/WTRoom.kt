@@ -10,6 +10,7 @@ data class WTRoom(
     var content: WTContent?,
     var playlist: MutableList<WTVideo>?,
     var users: MutableList<String>,
+    var oldUsers: MutableList<String>?,
     var messages: MutableList<WTMessage>?
 ): Serializable {
     fun toDict(): HashMap<*, *> {
@@ -21,6 +22,7 @@ data class WTRoom(
             "content" to content,
             "playlist" to playlist,
             "users" to users,
+            "oldUsers" to oldUsers,
             "message" to messages
         )
     }

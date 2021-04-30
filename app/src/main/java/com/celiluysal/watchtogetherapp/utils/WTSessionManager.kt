@@ -16,7 +16,7 @@ class WTSessionManager {
 
     fun loggedIn(user: WTUser) {
         this.user = user
-        Log.e("WTSessionManager","loggedIn"+ user.email.toString())
+        Log.e("WTSessionManager", "loggedIn" + user.email.toString())
     }
 
     fun logOut() {
@@ -24,13 +24,11 @@ class WTSessionManager {
     }
 
     fun fetchUser(Result: (success: Boolean, error: String?) -> Unit) {
-        val currentUser = firebaseManager.getCurrentUser()
-//        Log.e("WTSessionManager","fetchUser")
-
+        val currentUser = FirebaseManager.shared.getCurrentUser()
 
         currentUser?.let { firebaseUser ->
             firebaseManager.fetchUser(firebaseUser.uid) { wtUser: WTUser?, error: String? ->
-                if (wtUser != null){
+                if (wtUser != null) {
 //                    Log.e("WTSessionManager","fetchUserInfo")
 
                     loggedIn(wtUser)

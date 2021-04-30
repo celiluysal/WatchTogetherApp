@@ -21,6 +21,7 @@ class WTFirebaseUtils {
             content = snapshotToContent(roomSnapshot.child("Content")),
             playlist = snapshotToPlaylist(roomSnapshot.child("Playlist")),
             users = snapshotToUsers(roomSnapshot.child("Users")),
+            oldUsers = snapshotToOldUsers(roomSnapshot.child("OldUsers")),
             messages = snapshotToMessages(roomSnapshot.child("Messages"))
         )
     }
@@ -38,6 +39,18 @@ class WTFirebaseUtils {
     }
 
     fun snapshotToUsers(usersSnapshot: DataSnapshot): MutableList<String> {
+        val users = mutableListOf<String>()
+        for (child in usersSnapshot.children.iterator()) {
+            val userId = child.value as String
+            users.add(userId)
+        }
+        return users
+    }
+
+    fun snapshotToOldUsers(usersSnapshot: DataSnapshot): MutableList<String>? {
+        if (usersSnapshot.value == null)
+            return null
+
         val users = mutableListOf<String>()
         for (child in usersSnapshot.children.iterator()) {
             val userId = child.value as String

@@ -130,6 +130,44 @@ class FirebaseManager {
         })
     }
 
+    fun leaveFromRoom (
+    roomId: String,
+    wtUser: WTUser,
+    Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        addOldUserToRoom(roomId, wtUser, Result)
+    }
+
+    private fun addOldUserToRoom(
+        roomId: String,
+        wtUser: WTUser,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("OldUsers").child(wtUser.userId)
+            .setValue(
+                wtUser.userId
+            ).addOnSuccessListener {
+                removeUserFromRoom(roomId, wtUser, Result)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
+
+    private fun removeUserFromRoom(
+        roomId: String,
+        wtUser: WTUser,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Users").child(wtUser.userId).removeValue()
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
+
 
     private fun addUserToRoom(
         roomId: String,
