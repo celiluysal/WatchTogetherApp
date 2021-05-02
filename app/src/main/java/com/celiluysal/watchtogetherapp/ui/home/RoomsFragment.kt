@@ -30,13 +30,27 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-
         return binding.root
     }
 
-    fun observeViewModel(){
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(RoomsViewModel::class.java)
+
+    }
+
+    override fun onStart() {
+        super.onStart()
         viewModel.fetchRooms()
+        observeViewModel()
+        Log.e("RoomsFragment", "onStart")
+    }
+
+    fun observeViewModel(){
+
         viewModel.wtRooms.observe(viewLifecycleOwner, { wtRooms ->
+            Log.e("RoomsFragment", "observeee")
+
             binding.recyclerViewRooms.layoutManager = LinearLayoutManager(context)
             roomsRecyclerViewAdapter = RoomsRecyclerViewAdapter(wtRooms, this)
             binding.recyclerViewRooms.adapter = roomsRecyclerViewAdapter
@@ -44,28 +58,25 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
     }
 
     override fun onRoomCardClick(item: WTRoom, position: Int) {
-        Log.e("RoomsFragment", "seçilen oda: "+item.roomName)
+//        Log.e("RoomsFragment", "seçilen oda: "+item.roomName)
 //        Toast.makeText(activity, "seçilen oda: "+item.roomName, Toast.LENGTH_SHORT).show()
 
         viewModel.joinRoom(item.roomId, null)
         viewModel.wtRoomId.observe(viewLifecycleOwner, { roomId ->
+//            Log.e("RoomsFragment", " oda: "+item.roomName)
             activity?.let {
+//                Log.e("RoomsFragment", " oda: "+item.roomName)
                 val intent = Intent(context, RoomActivity::class.java)
                 intent.putExtra("wtRoomId", roomId)
                 it.startActivity(intent)
+                it.finish()
+                viewModel.wtRoomId.removeObservers(viewLifecycleOwner)
             }
         })
 
-
-
-
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(RoomsViewModel::class.java)
-        observeViewModel()
-    }
+
 
     override fun getViewBinding(
         inflater: LayoutInflater,

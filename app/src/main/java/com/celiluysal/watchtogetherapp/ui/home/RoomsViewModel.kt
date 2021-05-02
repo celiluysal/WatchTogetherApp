@@ -18,14 +18,16 @@ class RoomsViewModel : ViewModel() {
     fun fetchRooms() {
         FirebaseManager.shared.fetchRooms { wtRooms, error ->
             if (wtRooms != null) {
-                Log.e("RoomsFragment", "fetchRooms success")
+                Log.e("RoomsViewModel", "fetchRooms success")
                 this.wtRooms.value = wtRooms
             } else
-                Log.e("RoomsFragment", error!!)
+                Log.e("RoomsViewModel", error!!)
         }
     }
 
     fun joinRoom(roomId: String, password: String?) {
+//        Log.e("RoomsViewModel", "joinRoom")
+
         WTSessionManager.shared.user?.let { wtUser ->
             FirebaseManager.shared.joinRoom(
                 roomId,
@@ -35,7 +37,7 @@ class RoomsViewModel : ViewModel() {
                 if (wtRoom != null)
                     wtRoomId.value = wtRoom.roomId
                 else
-                    Log.e("joinRoom", error!!)
+                    Log.e("RoomsViewModel", error!!)
 
             }
 

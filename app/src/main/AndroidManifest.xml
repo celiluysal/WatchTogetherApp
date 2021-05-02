@@ -11,8 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WatchTogetherApp">
-        <activity android:name=".ui.room.RoomActivity"></activity>
-        <activity android:name=".denemeActivity" />
+        <activity android:name=".ui.room.RoomActivity"/>
         <activity
             android:name=".ui.launcher.LauncherActivity"
             android:theme="@style/splash_theme">

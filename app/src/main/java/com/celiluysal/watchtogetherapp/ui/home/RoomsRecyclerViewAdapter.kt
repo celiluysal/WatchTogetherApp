@@ -1,5 +1,6 @@
 package com.celiluysal.watchtogetherapp.ui.home
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ class RoomsRecyclerViewAdapter(
             binding.textViewContent.isSelected = true
 
             itemView.setOnClickListener {
+                Log.e("RoomsRecyclerView", " oda: "+wtRoom.roomName)
                 action.onRoomCardClick(wtRoom, adapterPosition)
             }
         }

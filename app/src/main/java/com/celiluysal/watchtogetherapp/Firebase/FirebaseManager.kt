@@ -7,6 +7,7 @@ import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -55,73 +56,73 @@ class FirebaseManager {
         wtUser: WTUser,
         Result: ((wtRoom: WTRoom?, error: String?) -> Unit)
     ) {
-        dbRef.child("Rooms").child(roomId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot)
-                    if (room == null) {
-                        Result.invoke(null, "Room parse error")
-                        return
-                    }
-
+        dbRef.child("Rooms").child(roomId).get()
+            .addOnSuccessListener { snapshot ->
+                val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot)
+                if (room != null) {
                     if (password != null && password != room.password)
                         Result.invoke(null, "Wrong password")
                     else {
                         addUserToRoom(room.roomId, wtUser) { success: Boolean, error: String? ->
                             if (success)
-                                fetchRoom(roomId, Result)
+                                Result.invoke(room, null)
                             else
                                 Result.invoke(null, error)
                         }
                     }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Result.invoke(null, error.details)
-                }
-
-            })
+                } else
+                    Result.invoke(null, "Room parse error")
+            }
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
+            }
     }
-
 
     fun fetchRooms(
         Result: ((wtRooms: MutableList<WTRoom>?, error: String?) -> Unit)
     ) {
-        dbRef.child("Rooms").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
-                else {
-                    Result.invoke(null, "Room parse error")
-                    return
-                }
+        dbRef.child("Rooms").get()
+            .addOnSuccessListener { snapshot ->
                 val rooms = mutableListOf<WTRoom>()
-                for (roomId in value.keys) {
-                    val room =
-                        WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId.toString()))
+                for (roomSnapshot in snapshot.children.iterator()) {
+                    val room = WTFirebaseUtils.shared.snapshotToRoom(roomSnapshot)
                     if (room != null)
                         rooms.add(room)
                 }
                 Result.invoke(rooms, null)
             }
-            override fun onCancelled(error: DatabaseError) {
-                Result.invoke(null, error.details)
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
             }
-        })
     }
 
-    fun fetchRoom(roomId: String, Result: ((wtRoom: WTRoom?, error: String?) -> Unit)) {
-        dbRef.child("Rooms").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
-                else {
-                    Result.invoke(null, "Room parse error")
-                    return
-                }
-                val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot.child(roomId))
+    fun fetchRoom(
+        roomId: String,
+        Result: ((wtRoom: WTRoom?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).get()
+            .addOnSuccessListener { snapshot ->
+                val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot)
                 if (room != null)
                     Result.invoke(room, null)
+                else
+                    Result.invoke(null, "wtRoom is null")
                 Log.e("fetchRoom", "on data change")
+            }
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
+            }
+    }
 
+    fun observeMessages(
+        roomId: String,
+        Result: (messages: MutableList<WTMessage>?, error: String?) -> Unit
+    ){
+        dbRef.child("Rooms").child(roomId).child("Messages").addValueEventListener(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = WTFirebaseUtils.shared.snapshotToMessages(snapshot)
+                Result.invoke(messages, null)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -130,12 +131,82 @@ class FirebaseManager {
         })
     }
 
-    fun leaveFromRoom (
-    roomId: String,
-    wtUser: WTUser,
-    Result: ((success: Boolean, error: String?) -> Unit)
+    fun observeRoomUsers(
+        roomId: String,
+        Result: (users: MutableList<WTUser>?, error: String?) -> Unit
+    ){
+        val roomRef = dbRef.child("Rooms").child(roomId)
+        roomRef.child("Users").addValueEventListener(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val allUserIds = WTFirebaseUtils.shared.snapshotToUsers(snapshot)
+                roomRef.child("OldUsers").get()
+                    .addOnSuccessListener { oldUserIdsSnapshot ->
+                        val oldUserIds = WTFirebaseUtils.shared.snapshotToOldUsers(oldUserIdsSnapshot)
+                        if (oldUserIds != null)
+                            allUserIds.addAll(oldUserIds)
+
+                        fetchUsers(allUserIds) {wtUsers, error ->
+                            Result.invoke(wtUsers, null)
+                        }
+
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+
+    }
+
+    fun fetchRoomUsers(
+        roomId: String,
+        Result: (users: MutableList<WTUser>?, error: String?) -> Unit
+    ){
+
+    }
+
+    fun roomsRemoveObserver(
+        Result: ((wtRoom: WTRoom, error: String?) -> Unit)
     ) {
-        addOldUserToRoom(roomId, wtUser, Result)
+        dbRef.child("Rooms").addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                val room = WTFirebaseUtils.shared.snapshotToRoom(snapshot)
+                Log.e("roomsRemoveObserver", "room name: " + room?.roomName)
+                room?.let {
+                    Result.invoke(it, null)
+                }
+            }
+        })
+    }
+
+    fun deleteRoom(
+        wtRoom: WTRoom,
+        wtUser: WTUser,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(wtRoom.roomId).removeValue()
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
+
+    fun leaveFromRoom(
+        wtRoom: WTRoom,
+        wtUser: WTUser,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        addOldUserToRoom(wtRoom.roomId, wtUser, Result)
     }
 
     private fun addOldUserToRoom(
@@ -168,12 +239,33 @@ class FirebaseManager {
             }
     }
 
+    private fun removeOldUserFromRoom(
+        roomId: String,
+        wtUser: WTUser,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("OldUsers").child(wtUser.userId).removeValue()
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
 
     private fun addUserToRoom(
         roomId: String,
         wtUser: WTUser,
         Result: ((success: Boolean, error: String?) -> Unit)
     ) {
+        dbRef.child("Rooms").child(roomId).child("OldUsers").child(wtUser.userId).get()
+            .addOnSuccessListener {
+                removeOldUserFromRoom(roomId, wtUser) { success, error ->
+                    if (!success)
+                        Result.invoke(success, error)
+                }
+            }
+
         dbRef.child("Rooms").child(roomId).child("Users").child(wtUser.userId)
             .setValue(
                 wtUser.userId
@@ -270,34 +362,23 @@ class FirebaseManager {
             }
     }
 
-
-
     fun fetchUsers(
         userIds: MutableList<String>,
         Result: (wtUsers: MutableList<WTUser>?, error: String?) -> Unit
     ) {
-        dbRef.child("Users").addListenerForSingleValueEvent(object: ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val value = if (snapshot.value != null) snapshot.value as HashMap<*, *>
-                else {
-                    Result.invoke(null, "User parse error")
-                    return
-                }
+        dbRef.child("Users").get()
+            .addOnSuccessListener { snapshot ->
                 val users = mutableListOf<WTUser>()
                 for (userId in userIds) {
-                    val user =
-                        WTFirebaseUtils.shared.snapshotToUser(snapshot.child(userId))
+                    val user = WTFirebaseUtils.shared.snapshotToUser(snapshot.child(userId))
                     if (user != null)
                         users.add(user)
                 }
                 Result.invoke(users, null)
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
             }
-
-        })
     }
 
     fun fetchUser(

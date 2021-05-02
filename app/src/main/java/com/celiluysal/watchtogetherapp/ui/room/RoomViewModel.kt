@@ -1,6 +1,7 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,10 @@ import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
@@ -19,58 +24,68 @@ class RoomViewModel : ViewModel() {
     val wtRoom = MutableLiveData<WTRoom>()
     val wtUser = MutableLiveData<WTUser>()
     val wtUsers = MutableLiveData<MutableList<WTUser>>()
-    val wtOldUsers = MutableLiveData<MutableList<WTUser>>()
+    val wtMessages = MutableLiveData<MutableList<WTMessage>?>()
+//    val wtOldUsers = MutableLiveData<MutableList<WTUser>?>()
 
-    val leaveRoom = MutableLiveData<Boolean>()
+    val chatModelDidComplete = MutableLiveData<Boolean>()
+
+    val didLeaveRoom = MutableLiveData<Boolean>()
+    val didRoomDelete = MutableLiveData<Boolean>()
 
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
 
-    fun leaveFromRoom(){
-        FirebaseManager.shared.leaveFromRoom(wtRoom.value!!.roomId, wtUser.value!!) {success, error ->
-            leaveRoom.value = success
+    fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
+
+    fun observeDeleteRoom(roomId: String) {
+        FirebaseManager.shared.roomsRemoveObserver { wtRoom, error ->
+            didRoomDelete.value = wtRoom.roomId == roomId
         }
     }
 
-    fun fetchUsers(userIds: MutableList<String>){
+    fun deleteRoom() {
+        FirebaseManager.shared.deleteRoom(wtRoom.value!!, wtUser.value!!) { success, error ->
+        }
+    }
+
+    fun leaveFromRoom() {
+        FirebaseManager.shared.leaveFromRoom(wtRoom.value!!, wtUser.value!!) { success, error ->
+            didLeaveRoom.value = success
+        }
+    }
+
+    fun fetchUser() {
         WTSessionManager.shared.user?.let { wtUser ->
             this.wtUser.value = wtUser
-        }
-        FirebaseManager.shared.fetchUsers(userIds) {users, error ->
-            if (users != null && users.size > 0)
-                wtUsers.value = users
-            else
-                Log.e("fetchUsers", error!!)
-        }
-
-    }
-
-    fun fetchOldUsers(userIds: MutableList<String>){
-        FirebaseManager.shared.fetchUsers(userIds) {users, error ->
-            if (users != null && users.size > 0)
-                wtOldUsers.value = users
-            else
-                Log.e("fetchUsers", error!!)
+            Log.e("RoomViewModel", "chatModel.value?.wtUser")
         }
     }
 
-    fun fetchRoom(roomId: String){
+    fun fetchRoom(roomId: String) {
         FirebaseManager.shared.fetchRoom(roomId) { wtRoom: WTRoom?, error: String? ->
             if (wtRoom != null) {
-                Log.e("fetchRoom", "success")
-
-                wtRoom.oldUsers?.let { users -> fetchOldUsers(users) }
-                fetchUsers(wtRoom.users)
-
+                Log.e("fetchRoom", wtRoom.roomName)
                 this.wtRoom.value = wtRoom
-            }
-            else
+            } else
                 Log.e("fetchRoom", error!!)
-
         }
-
     }
+
+    fun observeUsers(roomId: String) {
+        FirebaseManager.shared.observeRoomUsers(roomId) { users, error ->
+            wtUsers.value = users
+        }
+    }
+
+    fun observeMessages(roomId: String) {
+        if (wtRoom.value != null) {
+            FirebaseManager.shared.observeMessages(roomId) { messages, error ->
+                wtMessages.value = messages
+            }
+        }
+    }
+
 
     fun addMessageToRoom(text: String) {
         createMessage(text)?.let { wtMessage ->
@@ -86,7 +101,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-    fun createMessage(text: String): WTMessage? {
+    private fun createMessage(text: String): WTMessage? {
         val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss z")
         val currentDateAndTime: String = simpleDateFormat.format(Date())
         WTSessionManager.shared.user?.let { wtUser ->
