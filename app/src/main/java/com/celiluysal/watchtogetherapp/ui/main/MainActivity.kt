@@ -24,6 +24,4 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavBar.setupWithNavController(navController)
 
     }
-
-
 }

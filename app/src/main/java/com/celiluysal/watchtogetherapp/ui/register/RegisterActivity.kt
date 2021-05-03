@@ -1,21 +1,18 @@
 package com.celiluysal.watchtogetherapp.ui.register
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.Firebase.RegisterRequestModel
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRegisterBinding
-import com.celiluysal.watchtogetherapp.ui.dialog.AvatarImage
-import com.celiluysal.watchtogetherapp.ui.dialog.AvatarPickerDialog
+import com.celiluysal.watchtogetherapp.models.AvatarImage
+import com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker.AvatarPickerDialog
 import com.celiluysal.watchtogetherapp.ui.login.LoginActivity
-import com.celiluysal.watchtogetherapp.ui.login.LoginViewModel
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
 import com.celiluysal.watchtogetherapp.utils.WTUtils
 

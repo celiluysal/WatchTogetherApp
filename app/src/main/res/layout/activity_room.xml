@@ -7,6 +7,85 @@
     tools:context=".ui.room.RoomActivity"
     android:background="@color/background">
 
+    <RelativeLayout
+        android:id="@+id/relativeLayoutTop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:id="@+id/relativeLayoutVideo"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/black"/>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relativeLayoutVideo"
+            android:orientation="horizontal">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:gravity="left">
+
+                <View
+                    android:id="@+id/viewPlaylist"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:background="@drawable/cricle"
+                    android:backgroundTint="@color/card"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_playlist"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+                <include
+                    android:id="@+id/includeRoomUsers"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    layout="@layout/item_room_users_card" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="right"
+                >
+
+                <View
+                    android:id="@+id/viewShare"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:background="@drawable/cricle"
+                    android:backgroundTint="@color/card"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_share"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewChat"
         android:layout_width="match_parent"
@@ -14,7 +93,8 @@
         android:paddingVertical="5dp"
         android:layout_above="@+id/constraintLayoutMessage"
         tools:listitem="@layout/item_message_from"
-        android:windowSoftInputMode="adjustResize"/>
+        android:windowSoftInputMode="adjustResize"
+        android:layout_below="@id/relativeLayoutTop"/>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,6 +113,8 @@
             android:layout_marginVertical="5dp"
             android:hint="@string/type_message"
             android:inputType="text|textCapSentences"
+            android:padding="8dp"
+            android:background="@null"
 
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageViewSend"

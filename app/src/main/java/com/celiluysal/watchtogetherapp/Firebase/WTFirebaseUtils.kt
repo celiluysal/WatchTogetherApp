@@ -38,6 +38,16 @@ class WTFirebaseUtils {
         )
     }
 
+    fun snapshotToRooms(roomsSnapshot: DataSnapshot): MutableList<WTRoom> {
+        val rooms = mutableListOf<WTRoom>()
+        for (child in roomsSnapshot.children.iterator()) {
+            val roomSnapshot = child.value as WTRoom
+            val room = snapshotToRoom(roomsSnapshot)
+            room?.let { rooms.add(room) }
+        }
+        return rooms
+    }
+
     fun snapshotToUsers(usersSnapshot: DataSnapshot): MutableList<String> {
         val users = mutableListOf<String>()
         for (child in usersSnapshot.children.iterator()) {
@@ -65,14 +75,14 @@ class WTFirebaseUtils {
 
         val videoDict = contentSnapshot.child("Video").value as HashMap<*, *>
         return WTContent(
-            currentTime = contentDict["currentTime"] as Int,
+            currentTime = contentDict["currentTime"].toString().toInt(),
             isPlaying = contentDict["isPlaying"] as Boolean,
             video = WTVideo(
                 videoId = videoDict["videoId"] as String,
                 title = videoDict["title"] as String,
                 thumbnail = videoDict["thumbnail"] as String,
                 channel = videoDict["channel"] as String,
-                duration = videoDict["duration"] as Int
+                duration = videoDict["duration"].toString().toInt()
             )
         )
     }
@@ -89,7 +99,7 @@ class WTFirebaseUtils {
                     title = videoDict["title"] as String,
                     thumbnail = videoDict["thumbnail"] as String,
                     channel = videoDict["channel"] as String,
-                    duration = videoDict["duration"] as Int
+                    duration = (videoDict["duration"]).toString().toInt()
                 )
             )
         }

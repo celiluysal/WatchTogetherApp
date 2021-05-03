@@ -3,21 +3,23 @@ package com.celiluysal.watchtogetherapp.ui.room
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.Observer
+import android.view.View
+import android.widget.RelativeLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTMessage
-import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.ui.login.LoginViewModel
+import com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker.PlaylistPickerDialog
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
-import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import com.celiluysal.watchtogetherapp.utils.WTUtils
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private lateinit var chatRecyclerViewAdapter: ChatRecyclerViewAdapter
+    private lateinit var userCardRecyclerViewAdapter: UserCardRecyclerViewAdapter
+    private lateinit var playlistPickerDialog: PlaylistPickerDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +30,10 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         viewModel.fetchRoom(roomId)
 
         observeViewModel()
+
+        keyboardSizeListener()
+
+        playListButton()
 
 
 
@@ -40,6 +46,45 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     }
 
+    private fun usersCard(wtUsers: MutableList<WTUser>) {
+        binding.includeRoomUsers.recyclerViewAvatar.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        userCardRecyclerViewAdapter = UserCardRecyclerViewAdapter(wtUsers)
+        binding.includeRoomUsers.recyclerViewAvatar.adapter = userCardRecyclerViewAdapter
+
+        if (wtUsers.size > 4) {
+            binding.includeRoomUsers.relativeLayoutMoreCount.visibility = RelativeLayout.VISIBLE
+            binding.includeRoomUsers.textViewMoreCount.text = "+${wtUsers.size - 4}"
+        } else
+            binding.includeRoomUsers.relativeLayoutMoreCount.visibility = RelativeLayout.GONE
+
+    }
+
+    private fun playListButton() {
+        binding.viewPlaylist.setOnClickListener {
+            playlistPickerDialog = PlaylistPickerDialog()
+            playlistPickerDialog.show(supportFragmentManager, "PlaylistPickerDialog")
+        }
+    }
+
+    private fun keyboardSizeListener() {
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener {
+            val heightDiff = binding.root.rootView.height - binding.root.height
+            if (heightDiff > WTUtils.shared.dpToPx(this, 200f)) {
+                binding.relativeLayoutTop.visibility = RelativeLayout.GONE
+            } else {
+                binding.relativeLayoutTop.visibility = RelativeLayout.VISIBLE
+            }
+        }
+    }
+
+
+    private fun startMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
     private fun observeViewModel() {
         viewModel.wtRoom.observe(this, { wtRoom ->
             viewModel.observeUsers(wtRoom.roomId)
@@ -48,17 +93,24 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         })
 
         viewModel.didRoomDelete.observe(this, {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            if (it) startMainActivity()
+            viewModel.didKickRoom.removeObservers(this)
         })
 
         viewModel.didLeaveRoom.observe(this, {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            if (it) startMainActivity()
+            viewModel.didKickRoom.removeObservers(this)
         })
 
+        viewModel.didKickRoom.observe(this, {
+            if (it) startMainActivity()
+        })
+
+
         viewModel.wtUser.observe(this, { user ->
-            viewModel.wtUsers.observe(this, { users ->
+            viewModel.wtAllUsers.observe(this, { users ->
+                viewModel.wtUsers?.let { usersCard(it) }
+
                 viewModel.wtMessages.observe(this, { messages ->
 
                     messages?.let { fillChat(messages, user, users) }
@@ -68,9 +120,12 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         })
     }
 
-    private fun fillChat(messages: MutableList<WTMessage>, wtUser: WTUser, wtUsers: MutableList<WTUser>) {
+    private fun fillChat(
+        messages: MutableList<WTMessage>,
+        wtUser: WTUser,
+        wtUsers: MutableList<WTUser>
+    ) {
         binding.recyclerViewChat.layoutManager = LinearLayoutManager(this)
-        @Suppress("UNCHECKED_CAST")
         chatRecyclerViewAdapter = ChatRecyclerViewAdapter(
             messages,
             wtUser,

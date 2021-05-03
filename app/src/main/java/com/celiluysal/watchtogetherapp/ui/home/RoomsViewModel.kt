@@ -14,6 +14,15 @@ class RoomsViewModel : ViewModel() {
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
+    
+    fun observeRoomsChild(){
+        FirebaseManager.shared.observeRoomsChild {success, error ->
+            if (success) {
+                fetchRooms()
+            } else
+                Log.e("RoomsViewModel", error!!)
+        }
+    }
 
     fun fetchRooms() {
         FirebaseManager.shared.fetchRooms { wtRooms, error ->
@@ -26,7 +35,6 @@ class RoomsViewModel : ViewModel() {
     }
 
     fun joinRoom(roomId: String, password: String?) {
-//        Log.e("RoomsViewModel", "joinRoom")
 
         WTSessionManager.shared.user?.let { wtUser ->
             FirebaseManager.shared.joinRoom(
@@ -40,8 +48,6 @@ class RoomsViewModel : ViewModel() {
                     Log.e("RoomsViewModel", error!!)
 
             }
-
         }
-
     }
 }

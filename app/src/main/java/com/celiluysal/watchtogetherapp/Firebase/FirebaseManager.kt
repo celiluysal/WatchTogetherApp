@@ -46,8 +46,6 @@ class FirebaseManager {
             .addOnFailureListener {
                 Result.invoke(null, it.localizedMessage)
             }
-
-
     }
 
     fun joinRoom(
@@ -96,6 +94,25 @@ class FirebaseManager {
             }
     }
 
+    fun observeRoomsChild(
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").addChildEventListener(object : ChildEventListener{
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                Result.invoke(true, null)
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                Log.e("observeRoomsChild", "onChildRemoved")
+                Result.invoke(true, null)
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
     fun fetchRoom(
         roomId: String,
         Result: ((wtRoom: WTRoom?, error: String?) -> Unit)
@@ -117,7 +134,7 @@ class FirebaseManager {
     fun observeMessages(
         roomId: String,
         Result: (messages: MutableList<WTMessage>?, error: String?) -> Unit
-    ){
+    ) {
         dbRef.child("Rooms").child(roomId).child("Messages").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -133,21 +150,25 @@ class FirebaseManager {
 
     fun observeRoomUsers(
         roomId: String,
-        Result: (users: MutableList<WTUser>?, error: String?) -> Unit
-    ){
+        Result: (oldUsers: MutableList<WTUser>?, users: MutableList<WTUser>?, error: String?) -> Unit
+    ) {
         val roomRef = dbRef.child("Rooms").child(roomId)
         roomRef.child("Users").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val allUserIds = WTFirebaseUtils.shared.snapshotToUsers(snapshot)
+                val userIds = WTFirebaseUtils.shared.snapshotToUsers(snapshot)
                 roomRef.child("OldUsers").get()
                     .addOnSuccessListener { oldUserIdsSnapshot ->
                         val oldUserIds = WTFirebaseUtils.shared.snapshotToOldUsers(oldUserIdsSnapshot)
-                        if (oldUserIds != null)
-                            allUserIds.addAll(oldUserIds)
 
-                        fetchUsers(allUserIds) {wtUsers, error ->
-                            Result.invoke(wtUsers, null)
+                        fetchUsers(userIds) { wtUsers, error ->
+                            if (oldUserIds != null) {
+                                fetchUsers(oldUserIds) { wtOldUsers, error ->
+                                    Result.invoke(wtOldUsers, wtUsers, error)
+                                }
+                            } else {
+                                Result.invoke(null, wtUsers, error)
+                            }
                         }
 
                     }
@@ -158,13 +179,6 @@ class FirebaseManager {
             }
 
         })
-
-    }
-
-    fun fetchRoomUsers(
-        roomId: String,
-        Result: (users: MutableList<WTUser>?, error: String?) -> Unit
-    ){
 
     }
 

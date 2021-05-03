@@ -1,11 +1,10 @@
 package com.celiluysal.watchtogetherapp.utils
 
 import android.content.Context
-import android.content.res.Resources
-import android.util.Log
+import android.util.TypedValue
 import com.celiluysal.watchtogetherapp.R
-import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.ui.dialog.AvatarImage
+import com.celiluysal.watchtogetherapp.models.AvatarImage
+
 
 class WTUtils {
     companion object {
@@ -33,5 +32,10 @@ class WTUtils {
             }
         }
         return avatarList as ArrayList<AvatarImage>
+    }
+
+    fun dpToPx(context: Context, valueInDp: Float): Float {
+        val metrics = context.resources.displayMetrics
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, valueInDp, metrics)
     }
 }

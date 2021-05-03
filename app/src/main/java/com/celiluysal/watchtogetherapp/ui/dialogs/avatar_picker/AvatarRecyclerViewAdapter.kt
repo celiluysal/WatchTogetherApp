@@ -1,9 +1,10 @@
-package com.celiluysal.watchtogetherapp.ui.dialog
+package com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.celiluysal.watchtogetherapp.databinding.ItemAvatarBinding
+import com.celiluysal.watchtogetherapp.models.AvatarImage
 
 class AvatarRecyclerViewAdapter(
     private val avatarImageList: ArrayList<AvatarImage>,

@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.dialog
+package com.celiluysal.watchtogetherapp.models
 
 data class AvatarImage(
     val id: Int,

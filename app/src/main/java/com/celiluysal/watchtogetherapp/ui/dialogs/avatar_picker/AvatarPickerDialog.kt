@@ -1,15 +1,13 @@
-package com.celiluysal.watchtogetherapp.ui.dialog
+package com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogAvatarPickerBinding
-import com.celiluysal.watchtogetherapp.ui.profile.ProfileFragment
+import com.celiluysal.watchtogetherapp.models.AvatarImage
 import com.celiluysal.watchtogetherapp.utils.WTUtils
 
 class AvatarPickerDialog(var defaultAvatarId: Int,
@@ -27,6 +25,7 @@ class AvatarPickerDialog(var defaultAvatarId: Int,
     ): View {
 
         binding = DialogAvatarPickerBinding.inflate(layoutInflater)
+
         binding.imageViewClose.setOnClickListener {
             dialog?.dismiss()
         }

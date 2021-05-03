@@ -1,8 +1,6 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
@@ -10,26 +8,23 @@ import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 class RoomViewModel : ViewModel() {
 
     val wtRoom = MutableLiveData<WTRoom>()
     val wtUser = MutableLiveData<WTUser>()
-    val wtUsers = MutableLiveData<MutableList<WTUser>>()
+    val wtAllUsers = MutableLiveData<MutableList<WTUser>>()
     val wtMessages = MutableLiveData<MutableList<WTMessage>?>()
-//    val wtOldUsers = MutableLiveData<MutableList<WTUser>?>()
+
+    var wtUsers: MutableList<WTUser>? = null
+    var wtOldUsers: MutableList<WTUser>? = null
 
     val chatModelDidComplete = MutableLiveData<Boolean>()
 
     val didLeaveRoom = MutableLiveData<Boolean>()
+    val didKickRoom = MutableLiveData<Boolean>()
     val didRoomDelete = MutableLiveData<Boolean>()
 
     val errorMessage = MutableLiveData<String>()
@@ -73,9 +68,29 @@ class RoomViewModel : ViewModel() {
     }
 
     fun observeUsers(roomId: String) {
-        FirebaseManager.shared.observeRoomUsers(roomId) { users, error ->
-            wtUsers.value = users
+        FirebaseManager.shared.observeRoomUsers(roomId) { oldUsers, users, error ->
+            users?.let { _users ->
+                wtUser.value?.userId?.let { _userId ->
+                    if (!isUserInRoom(_userId, _users))
+                        didKickRoom.value = true
+                }
+            }
+
+            wtUsers = users
+            wtOldUsers = oldUsers
+            val allUsers = users?.toMutableList()
+            if (oldUsers != null)
+                allUsers!!.addAll(oldUsers)
+            wtAllUsers.value = allUsers!!
         }
+    }
+
+    private fun isUserInRoom(userId: String, wtUsers: MutableList<WTUser>): Boolean {
+        for (wtUser in wtUsers) {
+            if (wtUser.userId == userId)
+                return true
+        }
+        return false
     }
 
     fun observeMessages(roomId: String) {
