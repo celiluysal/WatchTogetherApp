@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.Firebase
+package com.celiluysal.watchtogetherapp.network.Firebase
 
 import android.util.Log
 import com.celiluysal.watchtogetherapp.models.WTMessage

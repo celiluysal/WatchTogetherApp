@@ -2,7 +2,7 @@ package com.celiluysal.watchtogetherapp.ui.create_room
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
+import com.celiluysal.watchtogetherapp.network.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 

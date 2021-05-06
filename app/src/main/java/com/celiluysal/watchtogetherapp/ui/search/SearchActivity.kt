@@ -1,17 +1,16 @@
 package com.celiluysal.watchtogetherapp.ui.search
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.lifecycle.ViewModel
+import android.util.Log
+import android.webkit.*
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivitySearchBinding
 import com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker.VideoRecyclerViewAdapter
 
-class SearchActivity : BaseActivity<ActivitySearchBinding,SearchViewModel>() {
+
+class SearchActivity : BaseActivity<ActivitySearchBinding, SearchViewModel>() {
 
     private lateinit var videoRecyclerViewAdapter: VideoRecyclerViewAdapter
 
@@ -20,19 +19,41 @@ class SearchActivity : BaseActivity<ActivitySearchBinding,SearchViewModel>() {
         super.onCreate(savedInstanceState)
 
 
-        binding.webViewYoutube.webViewClient = WebViewClient()
-        binding.webViewYoutube.loadUrl("https://www.youtube.com")
-        binding.webViewYoutube.settings.javaScriptEnabled = true
+        binding.webViewYoutube.run {
+            webViewClient = object: WebViewClient() {
+
+                override fun doUpdateVisitedHistory(
+                    view: WebView?,
+                    url: String?,
+                    isReload: Boolean
+                ) {
+                    super.doUpdateVisitedHistory(view, url, isReload)
+                    Log.e("search update", url.toString())
+                    if(url?.contains("watch?v=") == true) {
+                        val videoId = url.split("watch?v=")[1].split("&")[0]
+                        loadUrl("")
+
+                        val returnIntent = Intent()
+                        returnIntent.putExtra("videoId", videoId)
+                        setResult(RESULT_OK, returnIntent)
+                        finish()
+                    }
+                }
+            }
+            settings.javaScriptEnabled = true
+            settings.loadWithOverviewMode = true
+            settings.useWideViewPort = true
+            settings.domStorageEnabled = true
+            loadUrl("https://www.youtube.com")
+        }
 
 
         binding.toolbar.setNavigationOnClickListener {
             onBackPressed()
         }
-
-
-
-
     }
+
+
 
     override fun onBackPressed() {
         if (binding.webViewYoutube.canGoBack())

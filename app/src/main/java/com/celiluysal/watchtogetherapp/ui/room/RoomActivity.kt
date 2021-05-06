@@ -1,5 +1,6 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,9 +12,15 @@ import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTUser
+import com.celiluysal.watchtogetherapp.models.WTVideo
+import com.celiluysal.watchtogetherapp.network.Youtube.ApiClient
+import com.celiluysal.watchtogetherapp.network.Youtube.models.VideoDetail
 import com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker.PlaylistPickerDialog
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
 import com.celiluysal.watchtogetherapp.utils.WTUtils
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
@@ -46,6 +53,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     }
 
+
     private fun usersCard(wtUsers: MutableList<WTUser>) {
         binding.includeRoomUsers.recyclerViewAvatar.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -68,6 +76,9 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         }
     }
 
+
+
+
     private fun keyboardSizeListener() {
         binding.root.viewTreeObserver.addOnGlobalLayoutListener {
             val heightDiff = binding.root.rootView.height - binding.root.height
@@ -87,6 +98,8 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private fun observeViewModel() {
         viewModel.wtRoom.observe(this, { wtRoom ->
+            Log.e("RoomActivity", "wtRoom observe")
+
             viewModel.observeUsers(wtRoom.roomId)
             viewModel.observeMessages(wtRoom.roomId)
             viewModel.observeDeleteRoom(wtRoom.roomId)

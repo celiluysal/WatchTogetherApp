@@ -6,7 +6,7 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
-import com.celiluysal.watchtogetherapp.Firebase.RegisterRequestModel
+import com.celiluysal.watchtogetherapp.network.Firebase.RegisterRequestModel
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRegisterBinding

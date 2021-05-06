@@ -1,13 +1,20 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
+import com.celiluysal.watchtogetherapp.network.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTRoom
 import com.celiluysal.watchtogetherapp.models.WTUser
+import com.celiluysal.watchtogetherapp.models.WTVideo
+import com.celiluysal.watchtogetherapp.network.Youtube.ApiClient
+import com.celiluysal.watchtogetherapp.network.Youtube.models.VideoDetail
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -21,8 +28,6 @@ class RoomViewModel : ViewModel() {
     var wtUsers: MutableList<WTUser>? = null
     var wtOldUsers: MutableList<WTUser>? = null
 
-    val chatModelDidComplete = MutableLiveData<Boolean>()
-
     val didLeaveRoom = MutableLiveData<Boolean>()
     val didKickRoom = MutableLiveData<Boolean>()
     val didRoomDelete = MutableLiveData<Boolean>()
@@ -30,6 +35,31 @@ class RoomViewModel : ViewModel() {
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
+
+
+    private fun fetchVideoDetail(videoId: String = "7fYi_tYZhnY") {
+        ApiClient.getClient.getVideoInfo(id = videoId)
+            .enqueue(object : Callback<VideoDetail> {
+                override fun onResponse(call: Call<VideoDetail>, response: Response<VideoDetail>) {
+                    Log.e("getData", "onResponse")
+                    val videoDetail = response.body()!!
+
+                    videoDetail.items[0].snippet.run {
+                        val wtVideo = WTVideo(
+                            videoId = videoId,
+                            title = title,
+                            thumbnail = thumbnails.default.url,
+                            channel = channelTitle,
+                            duration = 0,
+                        )
+                    }
+                }
+
+                override fun onFailure(call: Call<VideoDetail>, t: Throwable) {
+                    Log.e("getData", "onFailure")
+                }
+            })
+    }
 
     fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
 
@@ -101,7 +131,6 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-
     fun addMessageToRoom(text: String) {
         createMessage(text)?.let { wtMessage ->
             FirebaseManager.shared.addMessageToRoom(
@@ -116,6 +145,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun createMessage(text: String): WTMessage? {
         val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss z")
         val currentDateAndTime: String = simpleDateFormat.format(Date())

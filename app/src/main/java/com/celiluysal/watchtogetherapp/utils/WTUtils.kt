@@ -3,6 +3,7 @@ package com.celiluysal.watchtogetherapp.utils
 import android.content.Context
 import android.util.TypedValue
 import com.celiluysal.watchtogetherapp.R
+import com.celiluysal.watchtogetherapp.base.Constant
 import com.celiluysal.watchtogetherapp.models.AvatarImage
 
 
@@ -11,7 +12,6 @@ class WTUtils {
         val shared = WTUtils()
     }
 
-    val avatarCount = 20
 
     fun getAvatarResId(context: Context?, avatarId: Int): Int {
         context?.resources?.getIdentifier(
@@ -24,7 +24,7 @@ class WTUtils {
 
     fun getAvatarList(context: Context?): ArrayList<AvatarImage> {
         val avatarList: MutableList<AvatarImage> = mutableListOf()
-        for (i in 1..avatarCount) {
+        for (i in 1..Constant.AVATAR_COUNT) {
             context?.let { _context ->
                 getAvatarResId(_context, i).let { redId ->
                     avatarList.add(AvatarImage(i, redId))

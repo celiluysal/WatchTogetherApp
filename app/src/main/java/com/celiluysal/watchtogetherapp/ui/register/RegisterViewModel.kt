@@ -2,8 +2,9 @@ package com.celiluysal.watchtogetherapp.ui.register
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
-import com.celiluysal.watchtogetherapp.Firebase.RegisterRequestModel
+import com.celiluysal.watchtogetherapp.base.Constant
+import com.celiluysal.watchtogetherapp.network.Firebase.FirebaseManager
+import com.celiluysal.watchtogetherapp.network.Firebase.RegisterRequestModel
 import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 import com.celiluysal.watchtogetherapp.utils.WTUtils
@@ -15,7 +16,7 @@ class RegisterViewModel : ViewModel() {
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
 
     val avatarId = MutableLiveData<Int>().apply { postValue(
-        (1..WTUtils.shared.avatarCount).random()
+        (1..Constant.AVATAR_COUNT).random()
     ) }
 
     fun register(request: RegisterRequestModel) {

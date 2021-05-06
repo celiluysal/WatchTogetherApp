@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.Firebase
+package com.celiluysal.watchtogetherapp.network.Firebase
 
 import com.celiluysal.watchtogetherapp.models.*
 import com.google.firebase.database.DataSnapshot

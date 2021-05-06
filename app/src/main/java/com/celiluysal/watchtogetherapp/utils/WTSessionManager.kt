@@ -1,7 +1,7 @@
 package com.celiluysal.watchtogetherapp.utils
 
 import android.util.Log
-import com.celiluysal.watchtogetherapp.Firebase.FirebaseManager
+import com.celiluysal.watchtogetherapp.network.Firebase.FirebaseManager
 import com.celiluysal.watchtogetherapp.models.WTUser
 
 class WTSessionManager {
