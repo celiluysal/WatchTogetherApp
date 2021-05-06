@@ -97,7 +97,7 @@ class FirebaseManager {
     fun observeRoomsChild(
         Result: ((success: Boolean, error: String?) -> Unit)
     ) {
-        dbRef.child("Rooms").addChildEventListener(object : ChildEventListener{
+        dbRef.child("Rooms").addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 Result.invoke(true, null)
             }
@@ -159,7 +159,8 @@ class FirebaseManager {
                 val userIds = WTFirebaseUtils.shared.snapshotToUsers(snapshot)
                 roomRef.child("OldUsers").get()
                     .addOnSuccessListener { oldUserIdsSnapshot ->
-                        val oldUserIds = WTFirebaseUtils.shared.snapshotToOldUsers(oldUserIdsSnapshot)
+                        val oldUserIds =
+                            WTFirebaseUtils.shared.snapshotToOldUsers(oldUserIdsSnapshot)
 
                         fetchUsers(userIds) { wtUsers, error ->
                             if (oldUserIds != null) {
@@ -294,12 +295,12 @@ class FirebaseManager {
 
     fun addVideoToRoomPlaylist(
         roomId: String,
-        video: WTVideo,
+        wtVideo: WTVideo,
         Result: ((success: Boolean, error: String?) -> Unit)
     ) {
-        dbRef.child("Rooms").child(roomId).child("Playlist").push()
+        dbRef.child("Rooms").child(roomId).child("Playlist").child(wtVideo.videoId)
             .setValue(
-                video.toDict()
+                wtVideo.toDict()
             )
             .addOnSuccessListener {
                 Result.invoke(true, null)
@@ -307,6 +308,39 @@ class FirebaseManager {
             .addOnFailureListener {
                 Result.invoke(false, it.localizedMessage)
             }
+    }
+
+    fun observePlaylist(
+        roomId: String,
+        Result: ((wtPlayList: MutableList<WTVideo>?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Playlist")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val playList = WTFirebaseUtils.shared.snapshotToPlaylist(snapshot)
+                    Result.invoke(playList, null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(null, error.details)
+                }
+
+            })
+    }
+
+    fun deleteVideoFromRoomPlaylist(
+        roomId: String,
+        videoId: String,
+        Result: ((success: Boolean, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Playlist").child(videoId).removeValue()
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, null)
+            }
+
     }
 
 

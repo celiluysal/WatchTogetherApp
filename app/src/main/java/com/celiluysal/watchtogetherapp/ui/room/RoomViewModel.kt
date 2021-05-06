@@ -23,6 +23,7 @@ class RoomViewModel : ViewModel() {
     val wtRoom = MutableLiveData<WTRoom>()
     val wtUser = MutableLiveData<WTUser>()
     val wtAllUsers = MutableLiveData<MutableList<WTUser>>()
+    val wtPlaylist = MutableLiveData<MutableList<WTVideo>>()
     val wtMessages = MutableLiveData<MutableList<WTMessage>?>()
 
     var wtUsers: MutableList<WTUser>? = null
@@ -37,7 +38,10 @@ class RoomViewModel : ViewModel() {
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
 
 
-    private fun fetchVideoDetail(videoId: String = "7fYi_tYZhnY") {
+    private fun fetchVideoDetail(
+        videoId: String = "7fYi_tYZhnY",
+        Result: ((wtVideo: WTVideo?, error: String?) -> Unit)
+    ) {
         ApiClient.getClient.getVideoInfo(id = videoId)
             .enqueue(object : Callback<VideoDetail> {
                 override fun onResponse(call: Call<VideoDetail>, response: Response<VideoDetail>) {
@@ -48,17 +52,51 @@ class RoomViewModel : ViewModel() {
                         val wtVideo = WTVideo(
                             videoId = videoId,
                             title = title,
-                            thumbnail = thumbnails.default.url,
+                            thumbnail = thumbnails.medium.url,
                             channel = channelTitle,
                             duration = 0,
                         )
+
+                        Result.invoke(wtVideo, null)
                     }
                 }
 
                 override fun onFailure(call: Call<VideoDetail>, t: Throwable) {
                     Log.e("getData", "onFailure")
+                    Result.invoke(null, t.localizedMessage)
                 }
             })
+    }
+
+    fun addVideoToPlaylist(roomId: String, videoId: String) {
+        fetchVideoDetail(videoId) {wtVideo, error ->
+            if (wtVideo != null) {
+                FirebaseManager.shared.addVideoToRoomPlaylist(roomId, wtVideo) {success, error ->
+                    if (success)
+                        Log.e("addVideoToPlaylist", "success")
+                    else
+                        Log.e("addVideoToPlaylist", error.toString())
+                }
+            }
+
+        }
+
+    }
+
+    fun deleteVideoFromPlaylist(roomId: String, videoId: String) {
+        FirebaseManager.shared.deleteVideoFromRoomPlaylist(roomId, videoId) {success, error ->
+            if (success)
+                Log.e("deleteVideoFromPlaylist", "success")
+            else
+                Log.e("deleteVideoFromPlaylist", error.toString())
+
+        }
+    }
+
+    fun observePlayList(roomId: String) {
+        FirebaseManager.shared.observePlaylist(roomId) {wtPlayList, error ->
+            this.wtPlaylist.value = wtPlayList
+        }
     }
 
     fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId

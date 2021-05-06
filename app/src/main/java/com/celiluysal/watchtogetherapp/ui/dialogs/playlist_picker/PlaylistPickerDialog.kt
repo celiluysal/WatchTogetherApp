@@ -11,13 +11,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.celiluysal.watchtogetherapp.databinding.DialogPlaylistBinding
 import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
 import com.celiluysal.watchtogetherapp.ui.search.SearchActivity
 
 
-class PlaylistPickerDialog () :
+class PlaylistPickerDialog() :
     DialogFragment(), VideoRecyclerViewAdapter.onVideoItemClickListener {
     private lateinit var binding: DialogPlaylistBinding
     private lateinit var videoRecyclerViewAdapter: VideoRecyclerViewAdapter
@@ -36,9 +38,8 @@ class PlaylistPickerDialog () :
 
         binding = DialogPlaylistBinding.inflate(layoutInflater)
 
-        viewModel.wtRoom.observe(viewLifecycleOwner, {
-            Log.e("PlaylistPickerDialog", "wtRoom observe")
-        })
+        observeViewModel()
+
 
         binding.viewAdd.setOnClickListener {
             startActivityForResult(Intent(context, SearchActivity::class.java), REQ_SEARCH)
@@ -48,8 +49,6 @@ class PlaylistPickerDialog () :
             dialog?.dismiss()
         }
 
-        fill()
-
         return binding.root
     }
 
@@ -58,8 +57,10 @@ class PlaylistPickerDialog () :
         if (requestCode == REQ_SEARCH) {
             if (resultCode == Activity.RESULT_OK) {
                 val result = data?.getStringExtra("videoId")
-                result?.let {
-                    Log.e("PlaylistPickerDialog", it)
+                result?.let { videoId ->
+                    viewModel.wtRoom.value?.roomId?.let { roomId ->
+                        viewModel.addVideoToPlaylist(roomId, videoId)
+                    }
                 }
             }
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -68,14 +69,21 @@ class PlaylistPickerDialog () :
         }
     }
 
-    private fun fill() {
+    private fun observeViewModel() {
+        viewModel.wtRoom.value?.roomId?.let { roomId ->
+            viewModel.observePlayList(roomId)
+        }
 
-//        val list = WTUtils.shared.getAvatarList(activity?.baseContext)
-//
-//        binding.recyclerViewpPlaylist.layoutManager = LinearLayoutManager(activity)
-//        videoRecyclerViewAdapter = VideoRecyclerViewAdapter(list, this)
-//        binding.recyclerViewpPlaylist.adapter = videoRecyclerViewAdapter
+        viewModel.wtPlaylist.observe(viewLifecycleOwner, { wtPlaylist ->
+            if (wtPlaylist != null) {
+                binding.recyclerViewpPlaylist.visibility = RecyclerView.VISIBLE
+                binding.recyclerViewpPlaylist.layoutManager = LinearLayoutManager(activity)
+                videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, this)
+                binding.recyclerViewpPlaylist.adapter = videoRecyclerViewAdapter
+            } else
+                binding.recyclerViewpPlaylist.visibility = RecyclerView.INVISIBLE
 
+        })
     }
 
     override fun onStart() {
@@ -86,10 +94,12 @@ class PlaylistPickerDialog () :
     }
 
     override fun onVideoItemClick(item: WTVideo, position: Int) {
-        TODO("Not yet implemented")
+
     }
 
-
-
-
+    override fun onDeleteClick(item: WTVideo, position: Int) {
+        viewModel.wtRoom.value?.roomId?.let { roomId ->
+            viewModel.deleteVideoFromPlaylist(roomId, item.videoId)
+        }
+    }
 }

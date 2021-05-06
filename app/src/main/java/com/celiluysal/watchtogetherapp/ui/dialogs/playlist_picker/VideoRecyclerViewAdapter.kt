@@ -3,6 +3,7 @@ package com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.celiluysal.watchtogetherapp.databinding.ItemVideoCardBinding
 import com.celiluysal.watchtogetherapp.models.WTVideo
 
@@ -15,6 +16,18 @@ class VideoRecyclerViewAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(wtVideo: WTVideo, action: onVideoItemClickListener) {
+
+            binding.textViewVideoTitle.text = wtVideo.title
+//            binding.textViewVideoTitle.isSelected = true
+            binding.textViewChannel.text = wtVideo.channel
+
+            Glide.with(binding.root).load(wtVideo.thumbnail)
+                .into(binding.imageViewThumbnail)
+
+            binding.imageViewDelete.setOnClickListener {
+                action.onDeleteClick(wtVideo, adapterPosition)
+            }
+
             binding.cardViewVideo.setOnClickListener{
                 action.onVideoItemClick(wtVideo, adapterPosition)
             }
@@ -39,6 +52,12 @@ class VideoRecyclerViewAdapter(
 
     interface onVideoItemClickListener {
         fun onVideoItemClick(item: WTVideo, position: Int)
+
+        fun onDeleteClick(item: WTVideo, position: Int)
+    }
+
+    interface onDeleteClickListener {
+        fun onDeleteClick(item: WTVideo, position: Int)
     }
 
 
