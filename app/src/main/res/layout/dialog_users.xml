@@ -29,14 +29,14 @@
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPlaylist"
+        android:id="@+id/recyclerViewUsers"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/relativeLayoutAdd"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
-        tools:listitem="@layout/item_video_card"
+        tools:listitem="@layout/item_user_card"
         />
 
 

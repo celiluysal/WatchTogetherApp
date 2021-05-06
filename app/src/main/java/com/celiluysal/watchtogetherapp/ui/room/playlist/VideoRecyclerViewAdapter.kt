@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker
+package com.celiluysal.watchtogetherapp.ui.room.playlist
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -52,13 +52,7 @@ class VideoRecyclerViewAdapter(
 
     interface onVideoItemClickListener {
         fun onVideoItemClick(item: WTVideo, position: Int)
-
         fun onDeleteClick(item: WTVideo, position: Int)
     }
-
-    interface onDeleteClickListener {
-        fun onDeleteClick(item: WTVideo, position: Int)
-    }
-
 
 }

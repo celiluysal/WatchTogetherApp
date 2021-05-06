@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker
+package com.celiluysal.watchtogetherapp.ui.avatar_picker_dialog
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

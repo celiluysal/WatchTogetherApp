@@ -1,10 +1,8 @@
 package com.celiluysal.watchtogetherapp.ui.room
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.RelativeLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,21 +10,18 @@ import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.models.WTVideo
-import com.celiluysal.watchtogetherapp.network.Youtube.ApiClient
-import com.celiluysal.watchtogetherapp.network.Youtube.models.VideoDetail
-import com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker.PlaylistPickerDialog
+import com.celiluysal.watchtogetherapp.ui.room.playlist.PlaylistDialog
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
+import com.celiluysal.watchtogetherapp.ui.room.user_card.UserCardRecyclerViewAdapter
+import com.celiluysal.watchtogetherapp.ui.room.users.UsersDialog
 import com.celiluysal.watchtogetherapp.utils.WTUtils
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private lateinit var chatRecyclerViewAdapter: ChatRecyclerViewAdapter
     private lateinit var userCardRecyclerViewAdapter: UserCardRecyclerViewAdapter
-    private lateinit var playlistPickerDialog: PlaylistPickerDialog
+    private lateinit var playlistDialog: PlaylistDialog
+    private lateinit var usersDialog: UsersDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +53,17 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         binding.includeRoomUsers.recyclerViewAvatar.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        userCardRecyclerViewAdapter = UserCardRecyclerViewAdapter(wtUsers)
+        userCardRecyclerViewAdapter = UserCardRecyclerViewAdapter(
+            wtUsers,
+            object : UserCardRecyclerViewAdapter.onUserCardClickListener {
+                override fun onUserCardClick() {
+                    Log.e("relativeLayoutRoomUsers", "click")
+
+                    usersDialog = UsersDialog()
+                    usersDialog.show(supportFragmentManager, "UsersDialog")
+                }
+
+            })
         binding.includeRoomUsers.recyclerViewAvatar.adapter = userCardRecyclerViewAdapter
 
         if (wtUsers.size > 4) {
@@ -71,12 +76,10 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private fun playListButton() {
         binding.viewPlaylist.setOnClickListener {
-            playlistPickerDialog = PlaylistPickerDialog()
-            playlistPickerDialog.show(supportFragmentManager, "PlaylistPickerDialog")
+            playlistDialog = PlaylistDialog()
+            playlistDialog.show(supportFragmentManager, "PlaylistDialog")
         }
     }
-
-
 
 
     private fun keyboardSizeListener() {

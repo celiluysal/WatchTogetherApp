@@ -39,7 +39,7 @@ class RoomViewModel : ViewModel() {
 
 
     private fun fetchVideoDetail(
-        videoId: String = "7fYi_tYZhnY",
+        videoId: String,
         Result: ((wtVideo: WTVideo?, error: String?) -> Unit)
     ) {
         ApiClient.getClient.getVideoInfo(id = videoId)
@@ -116,6 +116,10 @@ class RoomViewModel : ViewModel() {
         FirebaseManager.shared.leaveFromRoom(wtRoom.value!!, wtUser.value!!) { success, error ->
             didLeaveRoom.value = success
         }
+    }
+
+    fun kickFromRoom(wtUser: WTUser){
+        FirebaseManager.shared.leaveFromRoom(wtRoom.value!!, wtUser) { success, error -> }
     }
 
     fun fetchUser() {

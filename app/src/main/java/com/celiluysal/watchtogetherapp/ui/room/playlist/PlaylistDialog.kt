@@ -1,16 +1,13 @@
-package com.celiluysal.watchtogetherapp.ui.dialogs.playlist_picker
+package com.celiluysal.watchtogetherapp.ui.room.playlist
 
-import android.R.attr
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.celiluysal.watchtogetherapp.databinding.DialogPlaylistBinding
@@ -19,11 +16,10 @@ import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
 import com.celiluysal.watchtogetherapp.ui.search.SearchActivity
 
 
-class PlaylistPickerDialog() :
+class PlaylistDialog() :
     DialogFragment(), VideoRecyclerViewAdapter.onVideoItemClickListener {
     private lateinit var binding: DialogPlaylistBinding
     private lateinit var videoRecyclerViewAdapter: VideoRecyclerViewAdapter
-    private lateinit var selectedItem: WTVideo
     private val viewModel: RoomViewModel by activityViewModels()
 
     companion object {
@@ -76,12 +72,12 @@ class PlaylistPickerDialog() :
 
         viewModel.wtPlaylist.observe(viewLifecycleOwner, { wtPlaylist ->
             if (wtPlaylist != null) {
-                binding.recyclerViewpPlaylist.visibility = RecyclerView.VISIBLE
-                binding.recyclerViewpPlaylist.layoutManager = LinearLayoutManager(activity)
+                binding.recyclerViewPlaylist.visibility = RecyclerView.VISIBLE
+                binding.recyclerViewPlaylist.layoutManager = LinearLayoutManager(activity)
                 videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, this)
-                binding.recyclerViewpPlaylist.adapter = videoRecyclerViewAdapter
+                binding.recyclerViewPlaylist.adapter = videoRecyclerViewAdapter
             } else
-                binding.recyclerViewpPlaylist.visibility = RecyclerView.INVISIBLE
+                binding.recyclerViewPlaylist.visibility = RecyclerView.INVISIBLE
 
         })
     }

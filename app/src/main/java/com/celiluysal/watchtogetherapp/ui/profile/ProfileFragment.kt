@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.celiluysal.watchtogetherapp.base.BaseFragment
 import com.celiluysal.watchtogetherapp.databinding.ProfileFragmentBinding
 import com.celiluysal.watchtogetherapp.models.AvatarImage
-import com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker.AvatarPickerDialog
+import com.celiluysal.watchtogetherapp.ui.avatar_picker_dialog.AvatarPickerDialog
 import com.celiluysal.watchtogetherapp.ui.login.LoginActivity
 import com.celiluysal.watchtogetherapp.utils.WTUtils
 

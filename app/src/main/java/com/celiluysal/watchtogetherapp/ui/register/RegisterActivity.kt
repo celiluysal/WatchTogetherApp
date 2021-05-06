@@ -11,7 +11,7 @@ import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRegisterBinding
 import com.celiluysal.watchtogetherapp.models.AvatarImage
-import com.celiluysal.watchtogetherapp.ui.dialogs.avatar_picker.AvatarPickerDialog
+import com.celiluysal.watchtogetherapp.ui.avatar_picker_dialog.AvatarPickerDialog
 import com.celiluysal.watchtogetherapp.ui.login.LoginActivity
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
 import com.celiluysal.watchtogetherapp.utils.WTUtils
