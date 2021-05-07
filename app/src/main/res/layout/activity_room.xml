@@ -17,8 +17,20 @@
         <RelativeLayout
             android:id="@+id/relativeLayoutVideo"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@color/black" />
+            android:layout_height="wrap_content"
+            android:background="@color/black">
+
+            <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+                android:id="@+id/youtubePlayer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:showVideoCurrentTime="false"
+                app:showVideoDuration="false"
+                app:showFullScreenButton="false"
+                app:showYouTubeButton="false"
+                app:showSeekBar="false"/>
+
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/linearLayout"

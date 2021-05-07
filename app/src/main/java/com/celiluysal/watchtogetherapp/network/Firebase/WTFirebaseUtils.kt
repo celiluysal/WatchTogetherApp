@@ -82,7 +82,7 @@ class WTFirebaseUtils {
                 title = videoDict["title"] as String,
                 thumbnail = videoDict["thumbnail"] as String,
                 channel = videoDict["channel"] as String,
-                duration = videoDict["duration"].toString().toInt()
+                sendTime = videoDict["duration"] as String
             )
         )
     }
@@ -99,7 +99,7 @@ class WTFirebaseUtils {
                     title = videoDict["title"] as String,
                     thumbnail = videoDict["thumbnail"] as String,
                     channel = videoDict["channel"] as String,
-                    duration = (videoDict["duration"]).toString().toInt()
+                    sendTime = (videoDict["sendTime"]) as String
                 )
             )
         }

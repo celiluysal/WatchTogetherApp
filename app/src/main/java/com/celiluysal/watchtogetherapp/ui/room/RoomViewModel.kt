@@ -47,6 +47,8 @@ class RoomViewModel : ViewModel() {
                 override fun onResponse(call: Call<VideoDetail>, response: Response<VideoDetail>) {
                     Log.e("getData", "onResponse")
                     val videoDetail = response.body()!!
+                    val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
+                    val currentDateAndTime: String = simpleDateFormat.format(Date())
 
                     videoDetail.items[0].snippet.run {
                         val wtVideo = WTVideo(
@@ -54,9 +56,8 @@ class RoomViewModel : ViewModel() {
                             title = title,
                             thumbnail = thumbnails.medium.url,
                             channel = channelTitle,
-                            duration = 0,
+                            sendTime = currentDateAndTime,
                         )
-
                         Result.invoke(wtVideo, null)
                     }
                 }
@@ -189,7 +190,7 @@ class RoomViewModel : ViewModel() {
 
     @SuppressLint("SimpleDateFormat")
     private fun createMessage(text: String): WTMessage? {
-        val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss z")
+        val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
         val currentDateAndTime: String = simpleDateFormat.format(Date())
         WTSessionManager.shared.user?.let { wtUser ->
             return WTMessage(

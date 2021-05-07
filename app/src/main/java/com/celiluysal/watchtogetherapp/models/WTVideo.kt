@@ -7,7 +7,7 @@ data class WTVideo(
     var title: String,
     var thumbnail: String,
     var channel: String,
-    var duration: Int
+    var sendTime: String
 ): Serializable {
     fun toDict(): HashMap<*,*>{
         return hashMapOf<String, Any?>(
@@ -15,7 +15,7 @@ data class WTVideo(
             "title" to title,
             "thumbnail" to thumbnail,
             "channel" to channel,
-            "duration" to duration
+            "sendTime" to sendTime
         )
     }
 }

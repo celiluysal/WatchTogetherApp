@@ -10,11 +10,16 @@ import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.ui.room.playlist.PlaylistDialog
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
+import com.celiluysal.watchtogetherapp.ui.room.playlist.PlaylistDialog
 import com.celiluysal.watchtogetherapp.ui.room.user_card.UserCardRecyclerViewAdapter
 import com.celiluysal.watchtogetherapp.ui.room.users.UsersDialog
 import com.celiluysal.watchtogetherapp.utils.WTUtils
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.loadOrCueVideo
+
 
 class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
@@ -37,6 +42,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
         playListButton()
 
+        video()
 
 
         binding.imageViewSend.setOnClickListener {
@@ -48,6 +54,33 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     }
 
+    private fun video() {
+        lifecycle.addObserver(binding.youtubePlayer)
+
+        binding.youtubePlayer.getPlayerUiController().showSeekBar(false)
+        binding.youtubePlayer.getPlayerUiController().showPlayPauseButton(true)
+        binding.youtubePlayer.getPlayerUiController().showMenuButton(false)
+        binding.youtubePlayer.enableBackgroundPlayback(true)
+        
+        binding.youtubePlayer.getYouTubePlayerWhenReady(object : YouTubePlayerCallback {
+            override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                Log.e("getWhenReady", "onYouTubePlayer")
+
+//                youTubePlayer.loadOrCueVideo(lifecycle,"xY8-vKsJ6QI", 0f)
+            }
+        })
+
+        binding.youtubePlayer.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+            override fun onReady(youTubePlayer: YouTubePlayer) {
+                Log.e("addListener", "onReady")
+//                youTubePlayer.loadVideo("xY8-vKsJ6QI", 0f)
+                youTubePlayer.cueVideo("xY8-vKsJ6QI", 0f)
+                youTubePlayer.play()
+            }
+
+        })
+    }
+
 
     private fun usersCard(wtUsers: MutableList<WTUser>) {
         binding.includeRoomUsers.recyclerViewAvatar.layoutManager =
@@ -57,8 +90,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             wtUsers,
             object : UserCardRecyclerViewAdapter.onUserCardClickListener {
                 override fun onUserCardClick() {
-                    Log.e("relativeLayoutRoomUsers", "click")
-
                     usersDialog = UsersDialog()
                     usersDialog.show(supportFragmentManager, "UsersDialog")
                 }
@@ -81,7 +112,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         }
     }
 
-
     private fun keyboardSizeListener() {
         binding.root.viewTreeObserver.addOnGlobalLayoutListener {
             val heightDiff = binding.root.rootView.height - binding.root.height
@@ -93,7 +123,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         }
     }
 
-
     private fun startMainActivity() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
@@ -101,8 +130,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private fun observeViewModel() {
         viewModel.wtRoom.observe(this, { wtRoom ->
-            Log.e("RoomActivity", "wtRoom observe")
-
             viewModel.observeUsers(wtRoom.roomId)
             viewModel.observeMessages(wtRoom.roomId)
             viewModel.observeDeleteRoom(wtRoom.roomId)
@@ -155,21 +182,10 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         }
     }
 
-
-    inline fun <T : Any> ifLet(vararg elements: T?, closure: (List<T>) -> Unit) {
-        if (elements.all { it != null }) {
-            closure(elements.filterNotNull())
-        }
-    }
-
     override fun onBackPressed() {
-//        super.onBackPressed()
-
         if (viewModel.userIsOwner()) {
-            Log.e("RoomActivity", "owner - delete room")
             viewModel.deleteRoom()
         } else {
-            Log.e("RoomActivity", "leave room")
             viewModel.leaveFromRoom()
         }
     }

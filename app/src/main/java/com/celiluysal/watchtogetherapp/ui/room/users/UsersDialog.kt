@@ -44,11 +44,7 @@ class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickList
                     users, this)
                 binding.recyclerViewUsers.adapter = userRecyclerViewAdapter
             }
-
-
         })
-
-
     }
 
     override fun onStart() {

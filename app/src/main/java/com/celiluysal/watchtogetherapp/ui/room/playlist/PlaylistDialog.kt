@@ -72,6 +72,8 @@ class PlaylistDialog() :
 
         viewModel.wtPlaylist.observe(viewLifecycleOwner, { wtPlaylist ->
             if (wtPlaylist != null) {
+                wtPlaylist.sortBy { it.sendTime }
+
                 binding.recyclerViewPlaylist.visibility = RecyclerView.VISIBLE
                 binding.recyclerViewPlaylist.layoutManager = LinearLayoutManager(activity)
                 videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, this)
