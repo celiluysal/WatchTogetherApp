@@ -75,14 +75,14 @@ class WTFirebaseUtils {
 
         val videoDict = contentSnapshot.child("Video").value as HashMap<*, *>
         return WTContent(
-            currentTime = contentDict["currentTime"].toString().toInt(),
+            currentTime = contentDict["currentTime"].toString().toFloat(),
             isPlaying = contentDict["isPlaying"] as Boolean,
             video = WTVideo(
                 videoId = videoDict["videoId"] as String,
                 title = videoDict["title"] as String,
                 thumbnail = videoDict["thumbnail"] as String,
                 channel = videoDict["channel"] as String,
-                sendTime = videoDict["duration"] as String
+                sendTime = videoDict["sendTime"] as String
             )
         )
     }

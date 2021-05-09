@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
+import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogAvatarPickerBinding
 import com.celiluysal.watchtogetherapp.models.AvatarImage
 import com.celiluysal.watchtogetherapp.utils.WTUtils
@@ -23,7 +24,7 @@ class AvatarPickerDialog(var defaultAvatarId: Int,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
+        dialog?.window?.setBackgroundDrawableResource(R.drawable.round_corner)
         binding = DialogAvatarPickerBinding.inflate(layoutInflater)
 
         binding.imageViewClose.setOnClickListener {

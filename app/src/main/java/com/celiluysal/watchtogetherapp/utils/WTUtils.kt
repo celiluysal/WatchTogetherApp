@@ -1,17 +1,24 @@
 package com.celiluysal.watchtogetherapp.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.TypedValue
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.Constant
 import com.celiluysal.watchtogetherapp.models.AvatarImage
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class WTUtils {
     companion object {
         val shared = WTUtils()
     }
+    @SuppressLint("SimpleDateFormat")
+    private val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
 
+    fun dayTimeStamp(): String = simpleDateFormat.format(Date())
 
     fun getAvatarResId(context: Context?, avatarId: Int): Int {
         context?.resources?.getIdentifier(

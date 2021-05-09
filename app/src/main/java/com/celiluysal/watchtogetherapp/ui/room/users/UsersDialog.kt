@@ -8,6 +8,7 @@ import android.widget.RelativeLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogUsersBinding
 import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
@@ -22,6 +23,7 @@ class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickList
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        dialog?.window?.setBackgroundDrawableResource(R.drawable.round_corner)
         binding = DialogUsersBinding.inflate(layoutInflater)
 
         observeViewModel()

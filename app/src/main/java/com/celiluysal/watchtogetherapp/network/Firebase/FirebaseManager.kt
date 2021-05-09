@@ -1,10 +1,7 @@
 package com.celiluysal.watchtogetherapp.network.Firebase
 
 import android.util.Log
-import com.celiluysal.watchtogetherapp.models.WTMessage
-import com.celiluysal.watchtogetherapp.models.WTRoom
-import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.models.WTVideo
+import com.celiluysal.watchtogetherapp.models.*
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ChildEventListener
@@ -147,6 +144,21 @@ class FirebaseManager {
             }
         })
     }
+
+    fun observeRoomUsersChild(roomId: String, Result: () -> Unit){
+        dbRef.child("Rooms").child(roomId).child("Users").addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                Log.e("observeNewUser", snapshot.toString())
+                Result.invoke()
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        } )
+
+        }
 
     fun observeRoomUsers(
         roomId: String,
@@ -292,7 +304,6 @@ class FirebaseManager {
             }
     }
 
-
     fun addVideoToRoomPlaylist(
         roomId: String,
         wtVideo: WTVideo,
@@ -318,6 +329,7 @@ class FirebaseManager {
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val playList = WTFirebaseUtils.shared.snapshotToPlaylist(snapshot)
+                    playList?.sortBy { it.sendTime }
                     Result.invoke(playList, null)
                 }
 
@@ -326,6 +338,83 @@ class FirebaseManager {
                 }
 
             })
+    }
+
+    fun fetchPlaylist(
+        roomId: String,
+        Result: ((wtPlaylist: MutableList<WTVideo>?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Playlist").get()
+            .addOnSuccessListener { snapshot ->
+                val playlist = WTFirebaseUtils.shared.snapshotToPlaylist(snapshot)
+                playlist?.sortBy { it.sendTime }
+                Result.invoke(playlist, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
+            }
+    }
+
+    fun observeContent(
+        roomId: String,
+        Result: ((wtContent: WTContent?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val content = WTFirebaseUtils.shared.snapshotToContent(snapshot)
+                    Result.invoke(content, null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(null, error.details)
+                }
+
+            })
+    }
+
+    fun fetchContent(
+        roomId: String,
+        Result: ((wtContent: WTContent?, error: String?) -> Unit)
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").get()
+            .addOnSuccessListener { snapshot ->
+                val content = WTFirebaseUtils.shared.snapshotToContent(snapshot)
+                Result.invoke(content, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(null, it.localizedMessage)
+            }
+    }
+
+    fun updateContentCurrentTime(
+        roomId: String,
+        currentTime: Float,
+        Result: (success: Boolean, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").child("currentTime")
+            .setValue(currentTime)
+            .addOnSuccessListener { }
+            .addOnFailureListener {  }
+    }
+
+    fun updateContentIsPlaying(
+        roomId: String,
+        isPlaying: Boolean,
+        Result: (success: Boolean, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").child("isPlaying")
+            .setValue(isPlaying)
+            .addOnSuccessListener { }
+            .addOnFailureListener {  }
+    }
+
+    fun addContentToRoom(
+        roomId: String,
+        wtContent: WTContent,
+        Result: (success: Boolean, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").setValue(wtContent.toDict())
     }
 
     fun deleteVideoFromRoomPlaylist(

@@ -10,6 +10,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogPlaylistBinding
 import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
@@ -31,7 +32,7 @@ class PlaylistDialog() :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
+        dialog?.window?.setBackgroundDrawableResource(R.drawable.round_corner)
         binding = DialogPlaylistBinding.inflate(layoutInflater)
 
         observeViewModel()
@@ -72,8 +73,6 @@ class PlaylistDialog() :
 
         viewModel.wtPlaylist.observe(viewLifecycleOwner, { wtPlaylist ->
             if (wtPlaylist != null) {
-                wtPlaylist.sortBy { it.sendTime }
-
                 binding.recyclerViewPlaylist.visibility = RecyclerView.VISIBLE
                 binding.recyclerViewPlaylist.layoutManager = LinearLayoutManager(activity)
                 videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, this)

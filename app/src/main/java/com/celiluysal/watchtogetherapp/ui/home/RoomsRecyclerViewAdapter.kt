@@ -3,7 +3,9 @@ package com.celiluysal.watchtogetherapp.ui.home
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.celiluysal.watchtogetherapp.databinding.ItemRoomCardBinding
 import com.celiluysal.watchtogetherapp.models.WTRoom
 
@@ -16,9 +18,17 @@ class RoomsRecyclerViewAdapter(
 
         fun bind(wtRoom: WTRoom, action: OnRoomCardItemClickListener) {
 
+            binding.chipRoomType.visibility = RelativeLayout.GONE
+
             binding.textViewRoomName.text = wtRoom.roomName
             binding.textViewPersonCount.text = wtRoom.users.size.toString()
+
+            binding.textViewContent.text = wtRoom.content!!.video.title
             binding.textViewContent.isSelected = true
+
+            Glide.with(binding.root).load(wtRoom.content!!.video.thumbnail)
+                .into(binding.imageViewThumbnail)
+
 
             itemView.setOnClickListener {
                 Log.e("RoomsRecyclerView", " oda: "+wtRoom.roomName)

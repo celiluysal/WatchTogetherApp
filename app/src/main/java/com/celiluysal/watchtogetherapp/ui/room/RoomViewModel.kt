@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.celiluysal.watchtogetherapp.models.*
 import com.celiluysal.watchtogetherapp.network.Firebase.FirebaseManager
-import com.celiluysal.watchtogetherapp.models.WTMessage
-import com.celiluysal.watchtogetherapp.models.WTRoom
-import com.celiluysal.watchtogetherapp.models.WTUser
-import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.celiluysal.watchtogetherapp.network.Youtube.ApiClient
 import com.celiluysal.watchtogetherapp.network.Youtube.models.VideoDetail
 import com.celiluysal.watchtogetherapp.utils.WTSessionManager
+import com.celiluysal.watchtogetherapp.utils.WTUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -24,6 +22,7 @@ class RoomViewModel : ViewModel() {
     val wtUser = MutableLiveData<WTUser>()
     val wtAllUsers = MutableLiveData<MutableList<WTUser>>()
     val wtPlaylist = MutableLiveData<MutableList<WTVideo>>()
+    val wtContent = MutableLiveData<WTContent>()
     val wtMessages = MutableLiveData<MutableList<WTMessage>?>()
 
     var wtUsers: MutableList<WTUser>? = null
@@ -47,8 +46,6 @@ class RoomViewModel : ViewModel() {
                 override fun onResponse(call: Call<VideoDetail>, response: Response<VideoDetail>) {
                     Log.e("getData", "onResponse")
                     val videoDetail = response.body()!!
-                    val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
-                    val currentDateAndTime: String = simpleDateFormat.format(Date())
 
                     videoDetail.items[0].snippet.run {
                         val wtVideo = WTVideo(
@@ -56,7 +53,7 @@ class RoomViewModel : ViewModel() {
                             title = title,
                             thumbnail = thumbnails.medium.url,
                             channel = channelTitle,
-                            sendTime = currentDateAndTime,
+                            sendTime = WTUtils.shared.dayTimeStamp(),
                         )
                         Result.invoke(wtVideo, null)
                     }
@@ -69,23 +66,90 @@ class RoomViewModel : ViewModel() {
             })
     }
 
-    fun addVideoToPlaylist(roomId: String, videoId: String) {
-        fetchVideoDetail(videoId) {wtVideo, error ->
-            if (wtVideo != null) {
-                FirebaseManager.shared.addVideoToRoomPlaylist(roomId, wtVideo) {success, error ->
-                    if (success)
-                        Log.e("addVideoToPlaylist", "success")
-                    else
-                        Log.e("addVideoToPlaylist", error.toString())
+    fun addContentToRoom(roomId: String, wtContent: WTContent) {
+        FirebaseManager.shared.addContentToRoom(
+            roomId,
+            wtContent
+        ) { success, error ->
+            if (success)
+                Log.e("addContentToRoom", "success")
+            else
+                Log.e("addContentToRoom", error.toString())
+        }
+    }
+
+    fun updateContentCurrentTime(currentTime: Float){
+        wtRoom.value?.let { wtRoom ->
+            FirebaseManager.shared.updateContentCurrentTime(wtRoom.roomId, currentTime) {success, error ->
+
+            }
+        }
+    }
+
+    fun updateContentIsPlaying(isPlaying: Boolean){
+        wtRoom.value?.let { wtRoom ->
+            FirebaseManager.shared.updateContentIsPlaying(wtRoom.roomId, isPlaying) {success, error ->  }
+        }
+    }
+
+    fun manageNextVideo(Result: (wtVideo: WTVideo?, error: String?) -> Unit) {
+        if (!userIsOwner())
+            return
+
+        FirebaseManager.shared.fetchPlaylist(wtRoom.value!!.roomId) { wtPlaylist, error ->
+            if (wtPlaylist != null) {
+                FirebaseManager.shared.fetchContent(wtRoom.value!!.roomId) { wtContent, error ->
+                    if (wtContent != null) {
+                        val videoId = wtContent.video.videoId
+                        val currentIndex = wtPlaylist.indexOfFirst { it.videoId == videoId }
+                        if (currentIndex + 1 == wtPlaylist.size)
+                            Result.invoke(wtPlaylist.first(), null)
+                        else
+                            Result.invoke(wtPlaylist[currentIndex + 1], null)
+                        Log.e("manageNextVideo", (currentIndex + 1).toString())
+                    }
                 }
             }
 
+
+        }
+    }
+
+    fun observeContent() {
+        FirebaseManager.shared.observeContent(wtRoom.value!!.roomId) { wtContent, error ->
+            this.wtContent.value = wtContent
+        }
+    }
+
+    fun observeNewUser(Result: () -> Unit) {
+        wtRoom.value?.let { wtRoom ->
+            FirebaseManager.shared.observeRoomUsersChild(wtRoom.roomId) {
+                Log.e("observeNewUser", "success")
+                Result.invoke()
+            }
         }
 
     }
 
+    fun addVideoToPlaylist(roomId: String, videoId: String) {
+        fetchVideoDetail(videoId) { wtVideo, error ->
+            if (wtVideo != null) {
+                FirebaseManager.shared.addVideoToRoomPlaylist(roomId, wtVideo) { success, error ->
+                    if (success) {
+                        Log.e("addVideoToPlaylist", "success")
+                        wtPlaylist.value?.let { playlist ->
+                            if (playlist.size <= 1)
+                                addContentToRoom(roomId, WTContent(wtVideo, 0f, true))
+                        }
+                    } else
+                        Log.e("addVideoToPlaylist", error.toString())
+                }
+            }
+        }
+    }
+
     fun deleteVideoFromPlaylist(roomId: String, videoId: String) {
-        FirebaseManager.shared.deleteVideoFromRoomPlaylist(roomId, videoId) {success, error ->
+        FirebaseManager.shared.deleteVideoFromRoomPlaylist(roomId, videoId) { success, error ->
             if (success)
                 Log.e("deleteVideoFromPlaylist", "success")
             else
@@ -95,12 +159,18 @@ class RoomViewModel : ViewModel() {
     }
 
     fun observePlayList(roomId: String) {
-        FirebaseManager.shared.observePlaylist(roomId) {wtPlayList, error ->
+        FirebaseManager.shared.observePlaylist(roomId) { wtPlayList, error ->
             this.wtPlaylist.value = wtPlayList
         }
     }
 
-    fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
+    //    fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
+    fun userIsOwner(): Boolean {
+        Log.e("userIsOwner", "owner-"+ wtRoom.value?.ownerId.toString())
+        Log.e("userIsOwner", "user-"+ wtUser.value?.userId.toString())
+
+        return wtRoom.value!!.ownerId == wtUser.value!!.userId
+    }
 
     fun observeDeleteRoom(roomId: String) {
         FirebaseManager.shared.roomsRemoveObserver { wtRoom, error ->
@@ -119,7 +189,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-    fun kickFromRoom(wtUser: WTUser){
+    fun kickFromRoom(wtUser: WTUser) {
         FirebaseManager.shared.leaveFromRoom(wtRoom.value!!, wtUser) { success, error -> }
     }
 
@@ -190,14 +260,12 @@ class RoomViewModel : ViewModel() {
 
     @SuppressLint("SimpleDateFormat")
     private fun createMessage(text: String): WTMessage? {
-        val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
-        val currentDateAndTime: String = simpleDateFormat.format(Date())
         WTSessionManager.shared.user?.let { wtUser ->
             return WTMessage(
                 messageId = UUID.randomUUID().toString(),
                 text = text,
                 ownerId = wtUser.userId,
-                sendTime = currentDateAndTime
+                sendTime = WTUtils.shared.dayTimeStamp()
             )
         }
         return null

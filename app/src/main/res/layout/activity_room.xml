@@ -28,7 +28,19 @@
                 app:showVideoDuration="false"
                 app:showFullScreenButton="false"
                 app:showYouTubeButton="false"
-                app:showSeekBar="false"/>
+                app:showSeekBar="false"
+                />
+
+            <TextView
+                android:id="@+id/textViewPlayPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_alignBottom="@id/youtubePlayer"
+                android:text="Başlat"
+                android:textColor="@color/white"
+                android:layout_marginBottom="5dp"
+                android:textSize="18sp"/>
 
         </RelativeLayout>
 
