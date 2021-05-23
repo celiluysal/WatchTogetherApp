@@ -7,7 +7,7 @@ import android.util.Log
 import android.webkit.*
 import com.celiluysal.watchtogetherapp.base.BaseActivity
 import com.celiluysal.watchtogetherapp.databinding.ActivitySearchBinding
-import com.celiluysal.watchtogetherapp.ui.room.playlist.VideoRecyclerViewAdapter
+import com.celiluysal.watchtogetherapp.ui.room.playlist_dialog.VideoRecyclerViewAdapter
 
 
 class SearchActivity : BaseActivity<ActivitySearchBinding, SearchViewModel>() {

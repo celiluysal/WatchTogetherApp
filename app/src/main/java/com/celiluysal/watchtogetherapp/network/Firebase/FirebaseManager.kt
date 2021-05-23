@@ -12,6 +12,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.random.Random
 
 class FirebaseManager {
     companion object {
@@ -145,20 +146,21 @@ class FirebaseManager {
         })
     }
 
-    fun observeRoomUsersChild(roomId: String, Result: () -> Unit){
-        dbRef.child("Rooms").child(roomId).child("Users").addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                Log.e("observeNewUser", snapshot.toString())
-                Result.invoke()
-            }
+    fun observeRoomUsersChild(roomId: String, Result: () -> Unit) {
+        dbRef.child("Rooms").child(roomId).child("Users")
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.e("observeNewUser", snapshot.toString())
+                    Result.invoke()
+                }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onCancelled(error: DatabaseError) {}
-        } )
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onChildRemoved(snapshot: DataSnapshot) {}
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onCancelled(error: DatabaseError) {}
+            })
 
-        }
+    }
 
     fun observeRoomUsers(
         roomId: String,
@@ -355,23 +357,92 @@ class FirebaseManager {
             }
     }
 
-    fun observeContent(
+    fun updateAutoSync(
         roomId: String,
-        Result: ((wtContent: WTContent?, error: String?) -> Unit)
+        Result: (success: Boolean, error: String?) -> Unit
     ) {
-        dbRef.child("Rooms").child(roomId).child("Content")
+        dbRef.child("Rooms").child(roomId).child("autoSync")
+            .setValue(Random.nextInt(0, 999999))
+            .addOnSuccessListener {
+                Result.invoke(true, null)
+            }
+            .addOnFailureListener {
+                Result.invoke(false, it.localizedMessage)
+            }
+    }
+
+    fun observeAutoSync(
+        roomId: String,
+        Result: (success: Boolean, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("autoSync")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val content = WTFirebaseUtils.shared.snapshotToContent(snapshot)
-                    Result.invoke(content, null)
+                    if (snapshot.value != null)
+                        Result.invoke(true, null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(false, error.details)
+                }
+            })
+    }
+
+    fun observeIsPlaying(
+        roomId: String,
+        Result: (isPlaying: Boolean?, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").child("isPlaying")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.value?.let {
+                        val isPlaying = it as Boolean
+                        Result.invoke(isPlaying, null)
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
                     Result.invoke(null, error.details)
                 }
-
             })
     }
+
+    fun observeCurrentTime(
+        roomId: String,
+        Result: (currentTime: Float?, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").child("currentTime")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.value?.let {
+                        val currentTime = it.toString().toFloat()
+                        Result.invoke(currentTime, null)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(null, error.details)
+                }
+            })
+    }
+
+    fun observeVideo(
+        roomId: String,
+        Result: (wtVideo: WTVideo?, wtContent: WTContent?, error: String?) -> Unit
+    ) {
+        dbRef.child("Rooms").child(roomId).child("Content").child("Video")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val video = WTFirebaseUtils.shared.snapshotToVideo(snapshot)
+                    Result.invoke(video, null, null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Result.invoke(null, null, error.details)
+                }
+            })
+    }
+
 
     fun fetchContent(
         roomId: String,
@@ -387,26 +458,20 @@ class FirebaseManager {
             }
     }
 
-    fun updateContentCurrentTime(
+    fun updateContentCurrentTimeAndIsPlaying(
         roomId: String,
+        isPlaying: Boolean,
         currentTime: Float,
         Result: (success: Boolean, error: String?) -> Unit
     ) {
-        dbRef.child("Rooms").child(roomId).child("Content").child("currentTime")
-            .setValue(currentTime)
-            .addOnSuccessListener { }
-            .addOnFailureListener {  }
-    }
-
-    fun updateContentIsPlaying(
-        roomId: String,
-        isPlaying: Boolean,
-        Result: (success: Boolean, error: String?) -> Unit
-    ) {
-        dbRef.child("Rooms").child(roomId).child("Content").child("isPlaying")
-            .setValue(isPlaying)
-            .addOnSuccessListener { }
-            .addOnFailureListener {  }
+            dbRef.child("Rooms").child(roomId).child("Content")
+                .updateChildren(
+                    mutableMapOf<String, Any?>(
+                        "isPlaying" to isPlaying,
+                        "currentTime" to currentTime
+                    )
+                )
+                .addOnSuccessListener { }
     }
 
     fun addContentToRoom(

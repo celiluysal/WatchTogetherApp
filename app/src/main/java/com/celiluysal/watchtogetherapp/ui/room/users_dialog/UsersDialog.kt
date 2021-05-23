@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.room.users
+package com.celiluysal.watchtogetherapp.ui.room.users_dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater

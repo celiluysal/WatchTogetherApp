@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.room
+package com.celiluysal.watchtogetherapp.ui.room.chat
 
 import android.content.Context
 import android.util.Log

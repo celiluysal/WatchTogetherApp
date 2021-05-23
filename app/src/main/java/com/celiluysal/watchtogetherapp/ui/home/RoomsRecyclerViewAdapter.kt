@@ -10,7 +10,7 @@ import com.celiluysal.watchtogetherapp.databinding.ItemRoomCardBinding
 import com.celiluysal.watchtogetherapp.models.WTRoom
 
 class RoomsRecyclerViewAdapter(
-    val wtRooms: MutableList<WTRoom>,
+    private val wtRooms: MutableList<WTRoom>,
     var clickListener: OnRoomCardItemClickListener
 ) : RecyclerView.Adapter<RoomsRecyclerViewAdapter.RoomViewHolder>() {
 
@@ -23,10 +23,10 @@ class RoomsRecyclerViewAdapter(
             binding.textViewRoomName.text = wtRoom.roomName
             binding.textViewPersonCount.text = wtRoom.users.size.toString()
 
-            binding.textViewContent.text = wtRoom.content!!.video.title
+            binding.textViewContent.text = wtRoom.content!!.video?.title
             binding.textViewContent.isSelected = true
-
-            Glide.with(binding.root).load(wtRoom.content!!.video.thumbnail)
+            
+            Glide.with(binding.root).load(wtRoom.content!!.video?.thumbnail)
                 .into(binding.imageViewThumbnail)
 
 

@@ -21,8 +21,8 @@ class RoomViewModel : ViewModel() {
     val wtRoom = MutableLiveData<WTRoom>()
     val wtUser = MutableLiveData<WTUser>()
     val wtAllUsers = MutableLiveData<MutableList<WTUser>>()
+
     val wtPlaylist = MutableLiveData<MutableList<WTVideo>>()
-    val wtContent = MutableLiveData<WTContent>()
     val wtMessages = MutableLiveData<MutableList<WTMessage>?>()
 
     var wtUsers: MutableList<WTUser>? = null
@@ -66,30 +66,31 @@ class RoomViewModel : ViewModel() {
             })
     }
 
-    fun addContentToRoom(roomId: String, wtContent: WTContent) {
-        FirebaseManager.shared.addContentToRoom(
-            roomId,
-            wtContent
-        ) { success, error ->
-            if (success)
-                Log.e("addContentToRoom", "success")
-            else
-                Log.e("addContentToRoom", error.toString())
-        }
-    }
-
-    fun updateContentCurrentTime(currentTime: Float){
+    fun addContentToRoom(wtContent: WTContent) {
         wtRoom.value?.let { wtRoom ->
-            FirebaseManager.shared.updateContentCurrentTime(wtRoom.roomId, currentTime) {success, error ->
-
+            FirebaseManager.shared.addContentToRoom(
+                wtRoom.roomId,
+                wtContent
+            ) { success, error ->
+                if (success)
+                    Log.e("addContentToRoom", "success")
+                else
+                    Log.e("addContentToRoom", error.toString())
             }
         }
     }
 
-    fun updateContentIsPlaying(isPlaying: Boolean){
+    fun updateContentCurrentTimeAndIsPlaying(isPlaying: Boolean, currentTime: Float) {
         wtRoom.value?.let { wtRoom ->
-            FirebaseManager.shared.updateContentIsPlaying(wtRoom.roomId, isPlaying) {success, error ->  }
+            FirebaseManager.shared.updateContentCurrentTimeAndIsPlaying(
+                wtRoom.roomId,
+                isPlaying,
+                currentTime
+            ) { success, error ->
+
+            }
         }
+
     }
 
     fun manageNextVideo(Result: (wtVideo: WTVideo?, error: String?) -> Unit) {
@@ -100,7 +101,7 @@ class RoomViewModel : ViewModel() {
             if (wtPlaylist != null) {
                 FirebaseManager.shared.fetchContent(wtRoom.value!!.roomId) { wtContent, error ->
                     if (wtContent != null) {
-                        val videoId = wtContent.video.videoId
+                        val videoId = wtContent.video?.videoId
                         val currentIndex = wtPlaylist.indexOfFirst { it.videoId == videoId }
                         if (currentIndex + 1 == wtPlaylist.size)
                             Result.invoke(wtPlaylist.first(), null)
@@ -115,20 +116,52 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-    fun observeContent() {
-        FirebaseManager.shared.observeContent(wtRoom.value!!.roomId) { wtContent, error ->
-            this.wtContent.value = wtContent
+    fun observeVideo(Result: (wtVideo: WTVideo, error: String?) -> Unit) {
+        wtRoom.value?.roomId?.let {
+            FirebaseManager.shared.observeVideo(it) { wtVideo, wtContent, error ->
+                if (wtVideo != null) {
+                    Result.invoke(wtVideo, error)
+                }
+            }
         }
     }
 
-    fun observeNewUser(Result: () -> Unit) {
-        wtRoom.value?.let { wtRoom ->
-            FirebaseManager.shared.observeRoomUsersChild(wtRoom.roomId) {
-                Log.e("observeNewUser", "success")
-                Result.invoke()
+    fun observeIsPlaying(Result: (Boolean) -> Unit) {
+        wtRoom.value?.roomId?.let {
+            FirebaseManager.shared.observeIsPlaying(it) { isPlaying, error ->
+                if (isPlaying != null)
+                    Result.invoke(isPlaying)
             }
         }
+    }
 
+    fun observeCurrentTime(Result: (Float) -> Unit) {
+        wtRoom.value?.roomId?.let {
+            FirebaseManager.shared.observeCurrentTime(it) { currentTime, error ->
+                if (currentTime != null) {
+                    Result.invoke(currentTime)
+                }
+
+            }
+        }
+    }
+
+    fun autoSync(){
+        wtRoom.value?.roomId?.let {
+            FirebaseManager.shared.updateAutoSync(it){success, error ->
+            }
+        }
+    }
+
+    fun observeAutoSync(Result: () -> Unit) {
+        wtRoom.value?.roomId?.let {
+            FirebaseManager.shared.observeAutoSync(it) { success, error ->
+                if (success) {
+                    Result.invoke()
+                }
+
+            }
+        }
     }
 
     fun addVideoToPlaylist(roomId: String, videoId: String) {
@@ -139,7 +172,7 @@ class RoomViewModel : ViewModel() {
                         Log.e("addVideoToPlaylist", "success")
                         wtPlaylist.value?.let { playlist ->
                             if (playlist.size <= 1)
-                                addContentToRoom(roomId, WTContent(wtVideo, 0f, true))
+                                addContentToRoom(WTContent(wtVideo, 0f, true))
                         }
                     } else
                         Log.e("addVideoToPlaylist", error.toString())
@@ -164,13 +197,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-    //    fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
-    fun userIsOwner(): Boolean {
-        Log.e("userIsOwner", "owner-"+ wtRoom.value?.ownerId.toString())
-        Log.e("userIsOwner", "user-"+ wtUser.value?.userId.toString())
-
-        return wtRoom.value!!.ownerId == wtUser.value!!.userId
-    }
+    fun userIsOwner(): Boolean = wtRoom.value!!.ownerId == wtUser.value!!.userId
 
     fun observeDeleteRoom(roomId: String) {
         FirebaseManager.shared.roomsRemoveObserver { wtRoom, error ->

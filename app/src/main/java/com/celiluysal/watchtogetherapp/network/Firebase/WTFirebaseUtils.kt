@@ -28,7 +28,7 @@ class WTFirebaseUtils {
 
     fun snapshotToUser(usersSnapshot: DataSnapshot): WTUser? {
         val userDict = if (usersSnapshot.value != null)
-            usersSnapshot.value as HashMap<*,*> else return null
+            usersSnapshot.value as HashMap<*, *> else return null
 
         return WTUser(
             userId = userDict["userId"] as String,
@@ -73,17 +73,10 @@ class WTFirebaseUtils {
         val contentDict = if (contentSnapshot.value != null)
             contentSnapshot.value as HashMap<*, *> else return null
 
-        val videoDict = contentSnapshot.child("Video").value as HashMap<*, *>
         return WTContent(
             currentTime = contentDict["currentTime"].toString().toFloat(),
             isPlaying = contentDict["isPlaying"] as Boolean,
-            video = WTVideo(
-                videoId = videoDict["videoId"] as String,
-                title = videoDict["title"] as String,
-                thumbnail = videoDict["thumbnail"] as String,
-                channel = videoDict["channel"] as String,
-                sendTime = videoDict["sendTime"] as String
-            )
+            video = snapshotToVideo(contentSnapshot.child("Video"))
         )
     }
 
@@ -92,18 +85,22 @@ class WTFirebaseUtils {
             return null
         val playlist = mutableListOf<WTVideo>()
         for (child in playlistSnapshot.children.iterator()) {
-            val videoDict = child.value as HashMap<*, *>
-            playlist.add(
-                WTVideo(
-                    videoId = videoDict["videoId"] as String,
-                    title = videoDict["title"] as String,
-                    thumbnail = videoDict["thumbnail"] as String,
-                    channel = videoDict["channel"] as String,
-                    sendTime = (videoDict["sendTime"]) as String
-                )
-            )
+            snapshotToVideo(child)?.let { playlist.add(it) }
         }
         return playlist
+    }
+
+    fun snapshotToVideo(videoSnapshot: DataSnapshot): WTVideo? {
+        if (videoSnapshot.value == null)
+            return null
+        val videoDict = videoSnapshot.value as HashMap<*, *>
+        return WTVideo(
+            videoId = videoDict["videoId"] as String,
+            title = videoDict["title"] as String,
+            thumbnail = videoDict["thumbnail"] as String,
+            channel = videoDict["channel"] as String,
+            sendTime = (videoDict["sendTime"]) as String
+        )
     }
 
     fun snapshotToMessages(messagesSnapshot: DataSnapshot): MutableList<WTMessage>? {

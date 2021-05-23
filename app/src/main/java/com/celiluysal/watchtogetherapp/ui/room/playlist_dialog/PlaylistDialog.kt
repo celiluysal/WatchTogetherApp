@@ -1,4 +1,4 @@
-package com.celiluysal.watchtogetherapp.ui.room.playlist
+package com.celiluysal.watchtogetherapp.ui.room.playlist_dialog
 
 import android.app.Activity
 import android.content.Intent
@@ -6,12 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogPlaylistBinding
+import com.celiluysal.watchtogetherapp.models.WTContent
 import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
 import com.celiluysal.watchtogetherapp.ui.search.SearchActivity
@@ -37,10 +39,12 @@ class PlaylistDialog() :
 
         observeViewModel()
 
-
-        binding.viewAdd.setOnClickListener {
-            startActivityForResult(Intent(context, SearchActivity::class.java), REQ_SEARCH)
-        }
+        if (viewModel.userIsOwner())
+            binding.viewAdd.setOnClickListener {
+                startActivityForResult(Intent(context, SearchActivity::class.java), REQ_SEARCH)
+            }
+        else
+            binding.relativeLayoutAdd.visibility = RelativeLayout.INVISIBLE
 
         binding.imageViewClose.setOnClickListener {
             dialog?.dismiss()
@@ -75,7 +79,7 @@ class PlaylistDialog() :
             if (wtPlaylist != null) {
                 binding.recyclerViewPlaylist.visibility = RecyclerView.VISIBLE
                 binding.recyclerViewPlaylist.layoutManager = LinearLayoutManager(activity)
-                videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, this)
+                videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, viewModel.userIsOwner(),this)
                 binding.recyclerViewPlaylist.adapter = videoRecyclerViewAdapter
             } else
                 binding.recyclerViewPlaylist.visibility = RecyclerView.INVISIBLE
@@ -91,7 +95,8 @@ class PlaylistDialog() :
     }
 
     override fun onVideoItemClick(item: WTVideo, position: Int) {
-
+        if (viewModel.userIsOwner())
+            viewModel.addContentToRoom(WTContent(item, 0f, true))
     }
 
     override fun onDeleteClick(item: WTVideo, position: Int) {

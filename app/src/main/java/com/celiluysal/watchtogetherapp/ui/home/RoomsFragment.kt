@@ -21,10 +21,6 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
 
     private lateinit var roomsRecyclerViewAdapter: RoomsRecyclerViewAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
