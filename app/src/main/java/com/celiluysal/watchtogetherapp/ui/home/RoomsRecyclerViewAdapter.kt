@@ -18,7 +18,10 @@ class RoomsRecyclerViewAdapter(
 
         fun bind(wtRoom: WTRoom, action: OnRoomCardItemClickListener) {
 
-            binding.chipRoomType.visibility = RelativeLayout.GONE
+            if (wtRoom.password == null)
+                binding.chipRoomType.visibility = RelativeLayout.GONE
+            else
+                binding.chipRoomType.visibility = RelativeLayout.VISIBLE
 
             binding.textViewRoomName.text = wtRoom.roomName
             binding.textViewPersonCount.text = wtRoom.users.size.toString()

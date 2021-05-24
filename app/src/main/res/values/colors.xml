@@ -15,7 +15,7 @@
     <color name="text_color">#BFFFFFFF</color>
     <color name="text_color_active">#FFFFFFFF</color>
 
-    <color name="transparent">#0fff00ff</color>
+    <color name="transparent">#00ffffff</color>
 
     <color name="status_bar">#ff040710</color>
     <color name="background">#ff0a1229</color>

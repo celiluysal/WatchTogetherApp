@@ -29,4 +29,6 @@
     <string name="long_password">Şifre en fazla 18 karakterli olmalı</string>
     <string name="type_message">Bir mesaj yazın</string>
     <string name="join">Katıl</string>
+    <string name="private_">Özel</string>
+    <string name="public_">Genel</string>
 </resources>

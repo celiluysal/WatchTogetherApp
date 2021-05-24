@@ -3,15 +3,62 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.home.RoomsFragment"
     android:background="@color/background">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewRoomType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        app:cardBackgroundColor="@color/card"
+        app:cardCornerRadius="50dp"
+        android:layout_marginTop="10dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textViewPublicTab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/public_"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:paddingVertical="5dp"
+                android:paddingHorizontal="20dp"
+                android:background="@drawable/round_corner"
+                android:backgroundTint="@color/turquoise"
+                tools:ignore="UnusedAttribute" />
+
+            <TextView
+                android:id="@+id/textViewPrivateTab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/private_"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:paddingVertical="5dp"
+                android:paddingHorizontal="20dp"
+                android:background="@drawable/round_corner"
+                android:backgroundTint="@color/transparent"
+                tools:ignore="UnusedAttribute" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewRooms"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        tools:listitem="@layout/item_room_card"/>
+        android:layout_marginTop="0dp"
+        tools:listitem="@layout/item_room_card"
+        android:layout_below="@+id/cardViewRoomType"/>
 
 
 </RelativeLayout>

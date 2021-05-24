@@ -32,14 +32,16 @@ class CreateRoomFragment : Fragment() {
         setPasswordLayout()
 
         binding.buttonCreateRoom.setOnClickListener {
-            if (checkFields()) {
-                val password = if (binding.switchPublic.isChecked) null else {
-                    binding.textInputEditTextPassword.text.toString()
+            var password: String? = null
+            if (!binding.switchPublic.isChecked) {
+                if (checkFields()){
+                    password = binding.textInputEditTextPassword.text.toString()
+                    viewModel.createRoom(binding.textInputEditTextRoomName.text.toString(), password)
                 }
+            } else
                 viewModel.createRoom(binding.textInputEditTextRoomName.text.toString(), password)
-                observeViewModel()
-            }
 
+            observeViewModel()
         }
 
 
@@ -55,7 +57,7 @@ class CreateRoomFragment : Fragment() {
                 it.startActivity(intent)
                 it.finish()
             }
-        } )
+        })
     }
 
     private fun checkFields(): Boolean {

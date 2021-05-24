@@ -11,10 +11,15 @@ import com.celiluysal.watchtogetherapp.utils.WTSessionManager
 class RoomsViewModel : ViewModel() {
     val wtRooms = MutableLiveData<MutableList<WTRoom>>()
     val wtRoomId = MutableLiveData<String>()
+    val roomType = MutableLiveData<RoomType>().apply { postValue(RoomType.PUBLIC) }
 
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
+
+    enum class RoomType {
+        PUBLIC, PRIVATE
+    }
     
     fun observeRoomsChild(){
         FirebaseManager.shared.observeRoomsChild {success, error ->
@@ -44,8 +49,7 @@ class RoomsViewModel : ViewModel() {
     fun isUserInAnyRoom(wtUser: WTUser, wtRooms: MutableList<WTRoom>): WTRoom? {
         for (wtRoom in wtRooms) {
             if (wtRoom.users.contains(wtUser.userId))
-                if (wtRoom.password == null)
-                    return wtRoom
+                return wtRoom
         }
         return null
     }
