@@ -51,8 +51,10 @@ class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickList
 
     override fun onStart() {
         super.onStart()
+
         val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
-        val height = (resources.displayMetrics.heightPixels * 0.90).toInt()
+        val height = ViewGroup.LayoutParams.WRAP_CONTENT
+
         dialog!!.window?.setLayout(width, height)
     }
 

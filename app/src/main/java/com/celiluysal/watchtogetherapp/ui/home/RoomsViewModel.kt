@@ -46,7 +46,7 @@ class RoomsViewModel : ViewModel() {
         }
     }
 
-    fun isUserInAnyRoom(wtUser: WTUser, wtRooms: MutableList<WTRoom>): WTRoom? {
+    private fun isUserInAnyRoom(wtUser: WTUser, wtRooms: MutableList<WTRoom>): WTRoom? {
         for (wtRoom in wtRooms) {
             if (wtRoom.users.contains(wtUser.userId))
                 return wtRoom

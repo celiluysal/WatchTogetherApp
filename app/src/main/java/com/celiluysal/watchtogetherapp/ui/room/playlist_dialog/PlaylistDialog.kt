@@ -1,8 +1,7 @@
 package com.celiluysal.watchtogetherapp.ui.room.playlist_dialog
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,13 +15,15 @@ import com.celiluysal.watchtogetherapp.databinding.DialogPlaylistBinding
 import com.celiluysal.watchtogetherapp.models.WTContent
 import com.celiluysal.watchtogetherapp.models.WTVideo
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
-import com.celiluysal.watchtogetherapp.ui.search.SearchActivity
+import com.celiluysal.watchtogetherapp.ui.search.SearchDialog
 
 
 class PlaylistDialog() :
-    DialogFragment(), VideoRecyclerViewAdapter.onVideoItemClickListener {
+    DialogFragment(), VideoRecyclerViewAdapter.onVideoItemClickListener,
+    SearchDialog.onVideoClickListener {
     private lateinit var binding: DialogPlaylistBinding
     private lateinit var videoRecyclerViewAdapter: VideoRecyclerViewAdapter
+    private lateinit var searchDialog: SearchDialog
     private val viewModel: RoomViewModel by activityViewModels()
 
     companion object {
@@ -41,7 +42,8 @@ class PlaylistDialog() :
 
         if (viewModel.userIsOwner())
             binding.viewAdd.setOnClickListener {
-                startActivityForResult(Intent(context, SearchActivity::class.java), REQ_SEARCH)
+                searchDialog = SearchDialog(this)
+                searchDialog.show(parentFragmentManager, "SearchDialog")
             }
         else
             binding.relativeLayoutAdd.visibility = RelativeLayout.INVISIBLE
@@ -53,22 +55,6 @@ class PlaylistDialog() :
         return binding.root
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_SEARCH) {
-            if (resultCode == Activity.RESULT_OK) {
-                val result = data?.getStringExtra("videoId")
-                result?.let { videoId ->
-                    viewModel.wtRoom.value?.roomId?.let { roomId ->
-                        viewModel.addVideoToPlaylist(roomId, videoId)
-                    }
-                }
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                //Write your code if there's no result
-            }
-        }
-    }
 
     private fun observeViewModel() {
         viewModel.wtRoom.value?.roomId?.let { roomId ->
@@ -79,7 +65,11 @@ class PlaylistDialog() :
             if (wtPlaylist != null) {
                 binding.recyclerViewPlaylist.visibility = RecyclerView.VISIBLE
                 binding.recyclerViewPlaylist.layoutManager = LinearLayoutManager(activity)
-                videoRecyclerViewAdapter = VideoRecyclerViewAdapter(wtPlaylist, viewModel.userIsOwner(),this)
+                videoRecyclerViewAdapter = VideoRecyclerViewAdapter(
+                    wtPlaylist,
+                    viewModel.userIsOwner(),
+                    this
+                )
                 binding.recyclerViewPlaylist.adapter = videoRecyclerViewAdapter
             } else
                 binding.recyclerViewPlaylist.visibility = RecyclerView.INVISIBLE
@@ -89,9 +79,12 @@ class PlaylistDialog() :
 
     override fun onStart() {
         super.onStart()
+
         val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
-        val height = (resources.displayMetrics.heightPixels * 0.90).toInt()
+        val height = ViewGroup.LayoutParams.WRAP_CONTENT
+
         dialog!!.window?.setLayout(width, height)
+
     }
 
     override fun onVideoItemClick(item: WTVideo, position: Int) {
@@ -102,6 +95,12 @@ class PlaylistDialog() :
     override fun onDeleteClick(item: WTVideo, position: Int) {
         viewModel.wtRoom.value?.roomId?.let { roomId ->
             viewModel.deleteVideoFromPlaylist(roomId, item.videoId)
+        }
+    }
+
+    override fun onVideoClick(videoId: String) {
+        viewModel.wtRoom.value?.roomId?.let { roomId ->
+            viewModel.addVideoToPlaylist(roomId, videoId)
         }
     }
 }

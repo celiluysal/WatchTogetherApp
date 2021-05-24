@@ -33,7 +33,7 @@ class PasswordDialog(private val wtRoom: WTRoom,
             if (wtRoom.password == binding.textInputEditTextPassword.text.toString()){
                 clickListener.onJoinButtonClick(wtRoom)
             } else {
-                Toast.makeText(context,"Şifre yanlış", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity,"Şifre yanlış", Toast.LENGTH_SHORT).show()
                 clickListener.onJoinButtonClick(null)
             }
 
@@ -51,7 +51,7 @@ class PasswordDialog(private val wtRoom: WTRoom,
     override fun onStart() {
         super.onStart()
         val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
-        val height = (resources.displayMetrics.heightPixels * 0.30).toInt()
+        val height = ViewGroup.LayoutParams.WRAP_CONTENT
         dialog!!.window?.setLayout(width, height)
     }
 
