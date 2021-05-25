@@ -3,11 +3,14 @@ package com.celiluysal.watchtogetherapp.ui.room
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.base.BaseActivity
+import com.celiluysal.watchtogetherapp.base.Constant
 import com.celiluysal.watchtogetherapp.databinding.ActivityRoomBinding
 import com.celiluysal.watchtogetherapp.models.WTContent
 import com.celiluysal.watchtogetherapp.models.WTMessage
@@ -64,8 +67,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
     }
 
     private var youtubePlayer: YouTubePlayer? = null
-    private var youtubePlayerState: PlayerConstants.PlayerState? = null
-    private var youtubePlayerIsPlaying = false
     private var youtubePlayerCurrentTime: Float? = null
     private var shouldSyncVideo = true
 
@@ -86,17 +87,14 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             youTubePlayer: YouTubePlayer,
             state: PlayerConstants.PlayerState
         ) {
-            youtubePlayerState = state
             when (state) {
                 PlayerConstants.PlayerState.ENDED -> {
                     if (viewModel.userIsOwner())
                         changeVideo()
-                    binding.textViewPlayPause.text = "Başlat"
-                    youtubePlayerIsPlaying = false
+                    viewModel.videoState.value = RoomViewModel.VideoState.ENDED
                 }
                 PlayerConstants.PlayerState.PAUSED -> {
-                    binding.textViewPlayPause.text = "Başlat"
-                    youtubePlayerIsPlaying = false
+                    viewModel.videoState.value = RoomViewModel.VideoState.PAUSED
                 }
                 PlayerConstants.PlayerState.PLAYING -> {
                     if (shouldSyncVideo) {
@@ -104,8 +102,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
                         shouldSyncVideo = false
                     }
 
-                    binding.textViewPlayPause.text = "Durdur"
-                    youtubePlayerIsPlaying = true
+                    viewModel.videoState.value = RoomViewModel.VideoState.PLAYING
                 }
                 else -> return
             }
@@ -173,26 +170,62 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     private fun controlVideoView() {
         if (viewModel.userIsOwner()) {
-            binding.textViewPlayPause.setOnClickListener {
-                when (binding.textViewPlayPause.text) {
-                    "Başlat" -> {
-                        Log.e("controlVideoView", "başlat")
-                        viewModel.updateContentCurrentTimeAndIsPlaying(
-                            true,
-                            youtubePlayerCurrentTime ?: 0f
-                        )
-                    }
-                    "Durdur" -> {
-                        Log.e("controlVideoView", "durdur")
-                        viewModel.updateContentCurrentTimeAndIsPlaying(
-                            false,
-                            youtubePlayerCurrentTime ?: 0f
-                        )
-                    }
+
+            binding.relativeLayoutControlIcons.postDelayed({
+                binding.relativeLayoutControlIcons.visibility = RelativeLayout.INVISIBLE
+            }, Constant.VIDEO_ICON_HIDE_DELAY)
+
+            binding.relativeLayoutControlArea.setOnClickListener{
+                Log.e("video", "clicked")
+                binding.relativeLayoutControlIcons.visibility = RelativeLayout.VISIBLE
+                binding.relativeLayoutControlIcons.postDelayed({
+                    binding.relativeLayoutControlIcons.visibility = RelativeLayout.INVISIBLE
+                }, Constant.VIDEO_ICON_HIDE_DELAY)
+            }
+
+            binding.imageViewPlayPause.setOnClickListener {
+                viewModel.updateContentCurrentTimeAndIsPlaying(
+                    viewModel.videoState.value != RoomViewModel.VideoState.PLAYING,
+                    youtubePlayerCurrentTime ?: 0f
+                )
+//                when (viewModel.videoState.value) {
+//                    RoomViewModel.VideoState.PLAYING -> {
+//                        Log.e("controlVideoView", "başlat")
+//                        viewModel.updateContentCurrentTimeAndIsPlaying(
+//                            true,
+//                            youtubePlayerCurrentTime ?: 0f
+//                        )
+//                    }
+//                    RoomViewModel.VideoState.PAUSED -> {
+//                        Log.e("controlVideoView", "durdur")
+//                        viewModel.updateContentCurrentTimeAndIsPlaying(
+//                            false,
+//                            youtubePlayerCurrentTime ?: 0f
+//                        )
+//                    }
+//                }
+            }
+
+            binding.imageViewSeekForward.setOnClickListener {
+                youtubePlayerCurrentTime?.let { currentTime ->
+                    viewModel.updateContentCurrentTimeAndIsPlaying(
+                        viewModel.videoState.value == RoomViewModel.VideoState.PLAYING,
+                        currentTime + 10f
+                    )
                 }
             }
+
+            binding.imageViewSeekBackward.setOnClickListener {
+                youtubePlayerCurrentTime?.let { currentTime ->
+                    viewModel.updateContentCurrentTimeAndIsPlaying(
+                        viewModel.videoState.value == RoomViewModel.VideoState.PLAYING,
+                        currentTime - 10f
+                    )
+                }
+            }
+
         } else {
-            binding.textViewPlayPause.visibility = TextView.GONE
+            binding.relativeLayoutControlIcons.visibility = TextView.GONE
         }
     }
 
@@ -210,7 +243,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             }
 
             viewModel.observeCurrentTime { currentTime ->
-                if (!viewModel.userIsOwner())
+//                if (!viewModel.userIsOwner())
                     youtubePlayer?.seekTo(currentTime)
             }
 
@@ -221,19 +254,24 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
         })
 
-
-
         if (viewModel.userIsOwner()) {
             viewModel.observeAutoSync {
                 if (youtubePlayerCurrentTime != null) {
                     Log.e("observeAutoSync", "update")
                     viewModel.updateContentCurrentTimeAndIsPlaying(
-                        youtubePlayerIsPlaying,
+                        viewModel.videoState.value == RoomViewModel.VideoState.PLAYING,
                         youtubePlayerCurrentTime!!
                     )
                 }
             }
         }
+
+        viewModel.videoState.observe(this, {
+            when (viewModel.videoState.value) {
+                RoomViewModel.VideoState.PLAYING -> binding.imageViewPlayPause.setImageResource(R.drawable.ic_pause)
+                RoomViewModel.VideoState.PAUSED -> binding.imageViewPlayPause.setImageResource(R.drawable.ic_play)
+            }
+        })
 
         viewModel.didRoomDelete.observe(this, {
             if (it) startMainActivity()

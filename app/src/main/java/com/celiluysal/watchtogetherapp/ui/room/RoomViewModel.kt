@@ -32,9 +32,15 @@ class RoomViewModel : ViewModel() {
     val didKickRoom = MutableLiveData<Boolean>()
     val didRoomDelete = MutableLiveData<Boolean>()
 
+    val videoState = MutableLiveData<VideoState>()
+
     val errorMessage = MutableLiveData<String>()
     val loadError = MutableLiveData<Boolean>().apply { postValue(false) }
     val loading = MutableLiveData<Boolean>().apply { postValue(false) }
+
+    enum class VideoState {
+        PLAYING, PAUSED, ENDED
+    }
 
 
     private fun fetchVideoDetail(
