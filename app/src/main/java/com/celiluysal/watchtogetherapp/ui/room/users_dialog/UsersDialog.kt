@@ -11,12 +11,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.celiluysal.watchtogetherapp.R
 import com.celiluysal.watchtogetherapp.databinding.DialogUsersBinding
 import com.celiluysal.watchtogetherapp.models.WTUser
+import com.celiluysal.watchtogetherapp.ui.avatar_picker_dialog.AvatarPickerDialog
+import com.celiluysal.watchtogetherapp.ui.message_dialog.MessageDialog
 import com.celiluysal.watchtogetherapp.ui.room.RoomViewModel
 
 class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickListener {
     private lateinit var binding: DialogUsersBinding
     private lateinit var userRecyclerViewAdapter: UserRecyclerViewAdapter
     private val viewModel: RoomViewModel by activityViewModels()
+    private lateinit var messageDialog: MessageDialog
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +46,8 @@ class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickList
                 userRecyclerViewAdapter = UserRecyclerViewAdapter(
                     viewModel.wtRoom.value!!.ownerId,
                     viewModel.wtUser.value!!.userId,
-                    users, this)
+                    users, this
+                )
                 binding.recyclerViewUsers.adapter = userRecyclerViewAdapter
             }
         })
@@ -59,6 +63,21 @@ class UsersDialog() : DialogFragment(), UserRecyclerViewAdapter.onUsersClickList
     }
 
     override fun onDeleteUserClick(item: WTUser, position: Int) {
-        viewModel.kickFromRoom(item)
+        messageDialog = MessageDialog(
+            "Bu kişiyi odadan çıkarmak istediğinize emin misiniz?",
+            object : MessageDialog.OnMessageDialogClickListener {
+                override fun onLeftButtonClick() {
+                    messageDialog.dismiss()
+                }
+
+                override fun onRightButtonClick() {
+                    viewModel.kickFromRoom(item)
+                    messageDialog.dismiss()
+                }
+            })
+
+        messageDialog.leftButtonText = "İptal"
+        messageDialog.rightButtonText = "Evet"
+        activity?.supportFragmentManager?.let { messageDialog.show(it, "MessageDialog") }
     }
 }

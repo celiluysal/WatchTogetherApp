@@ -16,8 +16,7 @@ import com.celiluysal.watchtogetherapp.ui.home.password_dialog.PasswordDialog
 import com.celiluysal.watchtogetherapp.ui.room.RoomActivity
 
 class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
-    RoomsRecyclerViewAdapter.OnRoomCardItemClickListener,
-    PasswordDialog.onJoinButtonClickListener {
+    RoomsRecyclerViewAdapter.OnRoomCardItemClickListener {
 
     companion object {
         fun newInstance() = RoomsFragment()
@@ -94,19 +93,28 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
 
     private fun showRooms(wtRooms: MutableList<WTRoom>, roomType: RoomsViewModel.RoomType?) {
         var rooms = wtRooms.filter { it.content != null } as MutableList
-        rooms = (if (roomType == RoomsViewModel.RoomType.PUBLIC) rooms.filter { it.password == null }
+        rooms =
+            (if (roomType == RoomsViewModel.RoomType.PUBLIC) rooms.filter { it.password == null }
             else rooms.filter { it.password != null }) as MutableList
 
         roomsRecyclerViewAdapter = RoomsRecyclerViewAdapter(rooms, this)
         binding.recyclerViewRooms.adapter = roomsRecyclerViewAdapter
     }
 
-    override fun onRoomCardClick(wtRoom: WTRoom, position: Int) {
-        if (wtRoom.password != null) {
-            passwordDialog = PasswordDialog(wtRoom, this)
+    override fun onRoomCardClick(item: WTRoom, position: Int) {
+        if (item.password != null) {
+            passwordDialog = PasswordDialog(item, object : PasswordDialog.OnJoinButtonClickListener {
+                    override fun onJoinButtonClick(wtRoom: WTRoom?) {
+                        if (wtRoom != null) {
+                            viewModel.joinRoom(wtRoom.roomId, wtRoom.password)
+                            passwordDialog.dismiss()
+                        }
+                    }
+                })
+
             passwordDialog.show(parentFragmentManager, "PasswordDialog")
         } else
-            viewModel.joinRoom(wtRoom.roomId, null)
+            viewModel.joinRoom(item.roomId, null)
     }
 
     override fun getViewBinding(
@@ -116,11 +124,4 @@ class RoomsFragment : BaseFragment<RoomsFragmentBinding, RoomsViewModel>(),
         return RoomsFragmentBinding.inflate(inflater, container, false)
     }
 
-
-    override fun onJoinButtonClick(wtRoom: WTRoom?) {
-        if (wtRoom != null) {
-            viewModel.joinRoom(wtRoom.roomId, wtRoom.password)
-            passwordDialog.dismiss()
-        }
-    }
 }

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +17,7 @@ import com.celiluysal.watchtogetherapp.models.WTContent
 import com.celiluysal.watchtogetherapp.models.WTMessage
 import com.celiluysal.watchtogetherapp.models.WTUser
 import com.celiluysal.watchtogetherapp.ui.main.MainActivity
+import com.celiluysal.watchtogetherapp.ui.message_dialog.MessageDialog
 import com.celiluysal.watchtogetherapp.ui.room.chat.ChatRecyclerViewAdapter
 import com.celiluysal.watchtogetherapp.ui.room.playlist_dialog.PlaylistDialog
 import com.celiluysal.watchtogetherapp.ui.room.user_card.UserCardRecyclerViewAdapter
@@ -32,6 +34,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
     private lateinit var userCardRecyclerViewAdapter: UserCardRecyclerViewAdapter
     private lateinit var playlistDialog: PlaylistDialog
     private lateinit var usersDialog: UsersDialog
+    private lateinit var messageDialog: MessageDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +56,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
         }
     }
 
-
     private fun video() {
         lifecycle.addObserver(binding.youtubePlayer)
 
@@ -63,7 +65,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
             getPlayerUiController().showCurrentTime(true)
             addYouTubePlayerListener(YoutubePlayerListener())
         }
-
     }
 
     private var youtubePlayer: YouTubePlayer? = null
@@ -175,7 +176,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
                 binding.relativeLayoutControlIcons.visibility = RelativeLayout.INVISIBLE
             }, Constant.VIDEO_ICON_HIDE_DELAY)
 
-            binding.relativeLayoutControlArea.setOnClickListener{
+            binding.relativeLayoutControlArea.setOnClickListener {
                 Log.e("video", "clicked")
                 binding.relativeLayoutControlIcons.visibility = RelativeLayout.VISIBLE
                 binding.relativeLayoutControlIcons.postDelayed({
@@ -244,7 +245,7 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
             viewModel.observeCurrentTime { currentTime ->
 //                if (!viewModel.userIsOwner())
-                    youtubePlayer?.seekTo(currentTime)
+                youtubePlayer?.seekTo(currentTime)
             }
 
             viewModel.observeVideo { wtVideo, error ->
@@ -300,7 +301,6 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
 
     var lastVideoId: String = ""
     private fun playVideo(videoId: String, startSeconds: Float) {
-        Log.e("playVideo", "videoId")
         youtubePlayer?.loadVideo(videoId, startSeconds)
         lastVideoId = videoId
     }
@@ -325,13 +325,25 @@ class RoomActivity : BaseActivity<ActivityRoomBinding, RoomViewModel>() {
     }
 
     override fun onBackPressed() {
-        if (viewModel.userIsOwner()) {
-            viewModel.deleteRoom()
-        } else {
-            viewModel.leaveFromRoom()
-        }
-    }
+        messageDialog = MessageDialog(
+            "Odadan ayrılmak istediğinize emin misiniz?",
+            object : MessageDialog.OnMessageDialogClickListener {
+                override fun onLeftButtonClick() {
+                    messageDialog.dismiss()
+                }
 
+                override fun onRightButtonClick() {
+                    if (viewModel.userIsOwner()) {
+                        viewModel.deleteRoom()
+                    } else {
+                        viewModel.leaveFromRoom()
+                    }
+                }
+            })
+        messageDialog.leftButtonText = "İptal"
+        messageDialog.rightButtonText = "Evet"
+        messageDialog.show(supportFragmentManager, "MessageDialog")
+    }
 
     override fun getViewBinding(): ActivityRoomBinding {
         return ActivityRoomBinding.inflate(layoutInflater)
